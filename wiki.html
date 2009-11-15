@@ -144,11 +144,17 @@ div#footer {
 }
 
 div#footer p {
-	color: #ccc;
+	color: #aaa;
 	margin: 0;
 	font-size: xx-small;
 	padding: 0.5em
 }
+
+div#footer a {
+	color: #225555;
+	text-decoration: none
+	
+	}
 
 div#navigation {
 	padding: 0;
@@ -599,6 +605,7 @@ wiki.display = function() {
 	$("#pageTitle").html(this._id);
 	$("#page-menu").html("");
 	$("<li class='pageSpecific'><a href='Javascript: wiki.edit()'>Edit</a></li>").appendTo("#page-menu");
+	$("<li class='pageSpecific'><a href='Javascript: wiki.history()'>History</a></li>").appendTo("#page-menu");
 	$("<li class='pageSpecific'><a href='Javascript: wiki.remove()'>Delete</a></li>").appendTo("#page-menu");
 	window.location = "wiki.html#" + this._id;
 
@@ -607,11 +614,11 @@ wiki.display = function() {
 wiki.init = function() {
 	wiki._id = "";
 	delete wiki._rev;
+	delete wiki._revisions;
 	wiki.body = "";
 	wiki.edited_on = "";
 	wiki.edited_by = "";
 }
-
 
 wiki.remove = function() {
 	$.ajax({
@@ -625,17 +632,17 @@ wiki.remove = function() {
 	});
 }
 
-
 wiki.open = function(id) {
 	wiki.init();
 	$.ajax({
 		type:	'get',
-		url:	'../' + id,
+		url:	'../' + id + "?revs=true",
 		success:	function(data) {
 			var page = JSON.parse(data);
 			wiki._id = page._id;
 			wiki._rev = page._rev;
 			wiki.body = page.body;
+			wiki._revisions = page._revisions;
 			wiki.edited_on = page.edited_on;
 			wiki.edited_by = page.edited_by;
 			wiki.display();
@@ -670,7 +677,6 @@ wiki.edit = function() {
 			if(this._id = "NewPage") {
 				$("#title").val("");
 			}
-
 
 			var pages;
 			$.ajax({
@@ -746,7 +752,6 @@ wiki.applyTemplate = function(id) {
 }
 
 wiki.remove = function() {
-
 	$.ajax({
 			type:	'delete',
 			url:	'../' + this._id + '?rev=' + this._rev,
@@ -758,6 +763,32 @@ wiki.remove = function() {
 			});
 }
 
+wiki.history = function() {
+//create a holder for the history list
+	$('#page-body').html('<h2>Page history</h2><ul id="history"></ul>').hide().fadeIn("slow");
+	//get the current rev number
+	var rev = this._revisions.start;
+	//iterate through the revisions
+	for(var x in this._revisions.ids)
+	{
+		$.ajax({
+			type:	'GET',
+			url:	'../' + this._id + '?rev=' + rev + '-' + this._revisions.ids[x],
+			success:	function(data) {
+				var page = JSON.parse(data);
+				$('<li>Edited on ' + page.edited_on + ' by ' + page.edited_by + '<a id="' + page._rev + '"> View</a></li>').appendTo('#history');
+				$('#' + page._rev).click(function(){
+					wiki.body = page.body;
+					wiki.display();
+				});
+			},
+			error:	function(data) {
+				$('<li>Revision ' + this._revisions.ids[x] + ' is unavailable.').appendTo('#history');
+			}
+		});
+		rev--;
+	}
+}
 
 
 //Finally, some miscellaneous useful functions
@@ -902,7 +933,10 @@ $(document).ready(function()
 		error: function(xhr, statusText) {
         if(xhr.status == 404) {
 					//if we get a 404 from the settings, assume this is a first time install. Lets create some objects in the DB for us
-
+					
+					//and a place to show progress
+					$("#container").html("<h1>Installing TapirWiki</h1><p>Before you use TapirWiki for the first time, a few default pages need to be loaded:</p><ul id='install-log'></ul><div id='install-result'></div>");
+					
 					//design doc - this provides the list of all wiki pages
 					var designDoc = {
 							   "_id": "_design/allPages",
@@ -995,7 +1029,7 @@ $(document).ready(function()
 					pop(HelpOnGettingStartedPage);
 
 					//Finally, let the user know installation is complete
-					$("#container").html("<h2>Installation complete</h2><p>Congratulations, TapirWiki has been set up correctly. Please refresh this page to access your new wiki</p>");
+					$("#install-result").html("<h2>Installation complete</h2><p>Congratulations, TapirWiki has been set up correctly. Please refresh this page to access your new wiki or click <a href='./wiki.html'>here</a>.</p>");
 				}
 		}
 
@@ -1006,8 +1040,14 @@ function pop(obj) {
 	$.ajax({
 		type:	'put',
 		url:	'../' + obj._id,
-		data:	JSON.stringify(obj)
+		data:	JSON.stringify(obj),
+		success: function(data) {
+			$("#install-log").append("<li>" + obj._id + " loaded...</li>"); },
+		error: function(data) {
+			$("#install-log").append("<li style='color:#f00'>" + obj._id + " failed. Please delete this database and try again. If the problem persists, please log an issue <a href='http://code.google.com/p/tapirwiki/'>here</a>.</li>");
+			}
 	});
+	
 }
 
 </script>
@@ -1029,7 +1069,7 @@ function pop(obj) {
 				<div id="inner-content"><p>Loading...</p></div>
 			</div>
 		</div>
-		<div id="footer"><p>Powered by TapirWiki. Find a tapir and love it!</p></div>
+		<div id="footer"><p>Powered by <a href="http://code.google.com/p/tapirwiki/">TapirWiki</a>. Find a tapir and love it!</p></div>
 	</div>
 </body>
 </html>
