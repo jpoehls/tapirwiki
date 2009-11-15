@@ -783,7 +783,7 @@ wiki.history = function() {
 				});
 			},
 			error:	function(data) {
-				$('<li>Revision ' + this._revisions.ids[x] + ' is unavailable.').appendTo('#history');
+				$('<li>Previous revision is no longer available...</li>').appendTo('#history');
 			}
 		});
 		rev--;
