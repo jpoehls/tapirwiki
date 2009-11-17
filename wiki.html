@@ -317,7 +317,8 @@ var linkReplacement = "<a href=\"#$1\" onClick=\"Javascript:wiki.open($1);\">$1<
 // Index Macros
 var indexMacro = /\{index\}/;
 var topicMacro = /\{topic:(.*?)\}/
-
+var recentChangesMacro = /\{recentChanges\}/;
+	
 // Include Macro
 var includeMacro = /\{include:(.*?)\}/;
 var includeText = "$1";
@@ -387,6 +388,11 @@ function convert(t) {
 		//index macro
 		if (lines[i].match(indexMacro)) {
 			html += lines[i].replace(indexMacro, index());
+			continue;
+		}
+
+		if (lines[i].match(recentChangesMacro)) {
+			html += lines[i].replace(recentChangesMacro, recentChanges());
 			continue;
 		}
 
@@ -587,15 +593,17 @@ wiki.save = function() {
 		type:	'put',
 		url:	'../' + this._id,
 		data:	JSON.stringify(this),
+		async:	false,
 		success:	function(data) {
 			var response = JSON.parse(data);
 			wiki._rev = response.rev;
-			wiki.display();
+			wiki.open(wiki._id);
 		},
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
 			alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
 	});
 	}
+	
 }
 
 wiki.display = function() {
@@ -764,30 +772,125 @@ wiki.remove = function() {
 }
 
 wiki.history = function() {
-//create a holder for the history list
-	$('#page-body').html('<h2>Page history</h2><ul id="history"></ul>').hide().fadeIn("slow");
+//This function creates a history list for the current page, showing previous revisions (which occur through editing the page) and conflicts (which occur through replication)
+
+	//create a holder for the history list
+	$('#page-body').html('<h2>Page history</h2><p>This page shows all stored historical versions of this page.</p><ul id="history"></ul>').hide().fadeIn("slow");
 	//get the current rev number
 	var rev = this._revisions.start;
-	//iterate through the revisions
+
+	//create an array to hold the merged list of revisions and conflicts
+	var oldPages = new Array();
+	
+	//iterate through the revisions for the current page
 	for(var x in this._revisions.ids)
 	{
 		$.ajax({
 			type:	'GET',
 			url:	'../' + this._id + '?rev=' + rev + '-' + this._revisions.ids[x],
+			async:	false,
 			success:	function(data) {
 				var page = JSON.parse(data);
-				$('<li>Edited on ' + page.edited_on + ' by ' + page.edited_by + '<a id="' + page._rev + '"> View</a></li>').appendTo('#history');
-				$('#' + page._rev).click(function(){
-					wiki.body = page.body;
-					wiki.display();
-				});
+				oldPages.push(page);
 			},
-			error:	function(data) {
-				$('<li>Previous revision is no longer available...</li>').appendTo('#history');
-			}
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+				alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
 		});
 		rev--;
 	}
+
+	//get conflicts for the current page, tag any pages as a conflict so we can identify them as such later
+	$.ajax({ 
+		type:	'GET',
+		url:	'../' + this._id + '?conflicts=true',
+		async:	false,
+		success: function(data) {
+			var conflicts = JSON.parse(data);
+			for(rev in conflicts._conflicts) {
+				$.ajax({
+					type:	'GET',
+					url:	'../' + wiki._id + '?rev=' + conflicts._conflicts[rev],
+					async:	false,
+					success: function(data){
+						page = JSON.parse(data);
+						page.conflict = true;
+						oldPages.push(page);
+					},
+					error: function (XMLHttpRequest, textStatus, errorThrown) {
+						alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
+					}				
+				});
+			}
+	},
+	error: function (XMLHttpRequest, textStatus, errorThrown) {
+		alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
+	}
+	});
+
+	//now we sort by date so that we have a nice chronological list to show the user
+	oldPages.sort(function(a,b){	
+		var dateA = Date.parse(a.edited_on);
+		var dateB = Date.parse(b.edited_on);
+		if (dateA < dateB) {
+			return 1;
+		} else {
+			return -1;
+		}
+	});
+
+	//remember previous versions in an array so we can view a historic version
+	wiki.previousVersions = new Array();
+	
+	for(var page in oldPages)
+	{	
+		var event = "Edited ";
+		if(oldPages[page].conflict) 
+		{
+			event = "Conflict ";
+		}
+
+		wiki.previousVersions[oldPages[page]._rev] = oldPages[page];
+		
+		$('<li>' + event + ' on ' + oldPages[page].edited_on + ' by ' + oldPages[page].edited_by + '<a id="' + oldPages[page]._rev + '"> View</a></li>').appendTo('#history');
+		$('#' + oldPages[page]._rev).click(function(){
+			wiki.body = wiki.previousVersions[this.id].body;
+			wiki.display();
+	});
+	}
+}
+
+wiki.sync = function() {
+	localDBArr = location.toString().split("/",4);
+	localDB = localDBArr[3];
+	var repA = {"source": settings.replicationEndPoint,"target":localDB};
+	var repB = {"source": localDB,"target":settings.replicationEndPoint};
+
+	//replicate remote to local
+	$.ajax({
+		type: 'POST',
+		url:	'/_replicate',
+		data:	JSON.stringify(repA),
+		success:	function(data) {
+			$('#page-body').html("Synchronisation complete!");
+		},
+		error: function (XMLHttpRequest, textStatus, errorThrown) {
+			alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
+		}
+	});
+	//and local to remote
+	$.ajax({
+		type: 'POST',
+		url:	'/_replicate',
+		data:	JSON.stringify(repB),
+		success:	function(data) {
+			$('#page-body').html("Synchronisation complete!");
+		},
+		error: function (XMLHttpRequest, textStatus, errorThrown) {
+			alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText);
+		}
+	});
+
+	
 }
 
 
@@ -853,6 +956,49 @@ var pages;
 }
 
 
+function recentChanges() {
+	var pages;
+	
+		$.ajax({
+			type:	'get',
+			url:	'../_design/allPages/_view/titles',
+			async:   false,
+			success:	function(data) {
+				var results = JSON.parse(data);
+				pages = results;
+				},
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+				pageContent = "Error!";
+				 }
+		});
+
+		pages.rows.sort(function(a,b){	
+			var dateA = Date.parse(a.value.edited_on);
+			var dateB = Date.parse(b.value.edited_on);
+			if (dateA < dateB) {
+				return 1;
+			} else {
+				return -1;
+			}
+		});
+
+
+		var html = "<ul class='page-list'>";
+		var recentPages = 5;
+		if(pages.rows.lenght < recentPages)
+		{
+			recentPages = pages.rows.length;
+		}
+		for(var x = 0; x < recentPages; x++)
+				{
+					var p = pages.rows[x];
+					html += "<li><a href='#" + p.id + "' onClick='Javascript: wiki.open(\"" + p.id + "\")'>" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
+				}
+		html += "</ul>";
+		return html;
+	}
+
+
 
 function topicList(title) {
 var pages;
@@ -906,6 +1052,11 @@ $(document).ready(function()
 			{
 				var m = settings.mainMenu[item];
 				$("<li><a href='#" + m + "' onClick='Javascript: wiki.open(\"" + m + "\")'>" + m + "</a></li>").appendTo("#main-menu");
+			}
+
+			//and if replication is enabled show the sync menu item
+			if(settings.replicationEnabled && location.toString().match(settings.replicationEndPoint) == null) {
+				$("<li><a href='#' onClick='Javascript: wiki.sync()'>Synchronise</a></li>").appendTo("#main-menu");				
 			}
 
 			var requestedPage = location.hash.substring(1);
