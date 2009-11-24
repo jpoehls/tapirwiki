@@ -929,98 +929,11 @@ $(document).ready(function()
 					
 					//and a place to show progress
 					$("#container").html("<h1>Installing TapirWiki</h1><p>Before you use TapirWiki for the first time, a few default pages need to be loaded:</p><ul id='install-log'></ul><div id='install-result'></div>");
-					
-					//design doc - this provides the list of all wiki pages
-					var designDoc = {
-							   "_id": "_design/allPages",
-							   "language": "javascript",
-							   "views": {
-							       "titles": {
-							           "map": "function(doc) {if(doc.type == 'page'){ emit(null, { 'id': doc._id, 'rev': doc._rev, 'title': doc.title, 'body': doc.body, 'edited_on': doc.edited_on, 'edited_by': doc.edited_by }); }}"
-							       }
-							   }
-							};
-
-					pop(designDoc);
-
-					//Settings - these are stored in a doc with the id "TAPIRWIKISETTINGS"
-					var wikiSettingsDoc = {
-					   "_id": "TAPIRWIKISETTINGS",
-					   "wikiName": "TapirWiki",
-					   "defaultUserName": "Anon.",
-					   "mainMenu": [
-					       "FrontPage",
-					       "Index",
-					       "NewPage",
-					       "Help"
-					   ],
-					   "defaultPage": "FrontPage"
-					};
-					pop(wikiSettingsDoc);
-
-					//Now for some useful pages for a new wiki...
-					// FrontPage, the page which will be shown to users accessing the wiki unless a specific page URL is followed
-
-					var FrontPage = {
-							   "_id": "FrontPage",
-							   "body": "h2. Welcome to your new wiki!\nWell done, it looks like your new wiki is up and running. This is the first page which users will see when coming to the wiki, unless they follow a link to a specific page. The wiki is a quick and simple way of sharing information between people. You can:\n* Easily add pages to store notes or any information\n* Anyone can edit pages so the information is easier to maintain\n* You can use the simple formatting to decorate your text whilst focusing on the content\n* Make use of Couch features such as replication to allow users to take the wiki offline\n\n{include:HelpOnGettingStarted}\n\nh2. More help\nYou can get more help here {goto:help}",
-							   "edited_by": "Anon.",
-							   "edited_on": "never",
-							   "type": "page"
-							};
-
-					pop(FrontPage);
-					
-					//Index - simply calls the index macro to list all pages in the wiki
-					var IndexPage = {
-							   "_id": "Index",
-							   "body": "h2. Wiki Index\nBelow is a list of all pages in the wiki.\n{index}\n\nIf you are looking for something else, perhaps it does not exist. Try creating a NewPage instead.",
-							   "edited_by": "Anon.",
-							   "edited_on": "never",
-							   "type": "page"
-							};
-
-					pop(IndexPage);
-
-					//Help
-					var HelpPage = {
-							   "_id": "Help",
-							   "body": "h2. Help! Help! Help!\n\nThe following pages provide some useful information for using the wiki. \n\n{topic:HelpOn}\n\nYou can add to these pages by creating a new page called HelpOnBlah!",
-							   "edited_by": "Anon.",
-							   "edited_on": "never",
-							   "type": "page"
-							};
-					pop(HelpPage);
-
-					var HelpOnMacrosPage = {
-							   "_id": "HelpOnMacros",
-							   "body": "h2. Macros\n\nMacros are functions you can call in a wiki page. There are a few simple macros in TapirWiki, this page tells you how to use them.\n\nh3. Using a macro\nTo use a macro, simply include it in the markup for your page. Try editing this page to see how the macros are invoked. The macros are contained in curly braces {macro} and some take an additional argument {macro:argument}\n\nh4. Index\nThe index macro lists all pages in the wiki. The macro name is \"index\" and it takes no arguments. Use it as follows:\n{index}\n\nh4. Topic List\nThe topic list macro finds all pages whose names begin with a given string. The macro name is \"topic\" and the argument is the first part of the page name which must match to be listed. For example, find all help pages in the Wiki:\n{topic:HelpOn}\n\nh4. Includes\nYou can include the content from any page within the body of any other page. Use this macro to reduce duplication in your wiki. The macro name is \"include\" and the argument is the page name to include. For example, to include the Help page:\n{include:Help}\n\nIf the page you include cannot be found, you will get an error message and a link to the page. Following the link should enable you to edit the page.\n{include:PageWhichDoesNotExistYet}\n",
-							   "edited_by": "Anon.",
-							   "edited_on": "never",
-							   "type": "page"
-							};
-
-					pop(HelpOnMacrosPage);
-
-					var HelpOnFormattingPage = {
-							   "_id": "HelpOnFormatting",
-							   "body": "h1. Help on formatting\nThis page contains examples of wiki markup you can use in TapirWiki. The markup language used is called \"textile\". Edit this page to see how the markup is used.\n\nh1. Header 1\n\nh2)>. Right-aligned padded Header 2\n\nh3()=[no]{color:red}. Red centred Header 3\n\nA single paragraph.\n\nFollowed by another.\n\n<p>Some inline <b>bold</b> HTML, inside paragraph tags.</p>\n\n<pre>\n  A <i>pre</i> Section.\n</pre>\n\n\"A quoted passage with -- assorted - replaced entities... , including 2 x 2 , (TM), (R) and (C). \"\n\nbq. A block quotation.\n\nFinished with a new paragraph.\n\nbq.. a multi-line block quotation.\n\nWith a second line\n\np(biggreen). Finished with a paragraph with a class of 'biggreen'\n\np(#italic). This has an id of 'italic'\n\np(biggreen#italic). This is both class 'biggreen' and id 'italic'\n\t\np{color:blue;margin:30px}. Some inline styling, using CSS(Cascading Style Sheets).\n\np[fr]. rouge\n\nThis is covered elsewhere[1].\n\nfn1. Down here, in fact.\n\nI _believe_ every word. And then? She *fell*! I __know__. I **really** __know__. ??Cat's Cradle?? by Vonnegut. Convert with @r.to_html@ I'm -sure- not sure. You are a +pleasant+ child. a ^2^ + b ^2^ = c ^2^ log ~2~ x\n\nI'm %unaware% of most soft drinks. I'm %{color:red}unaware% of most soft drinks. I seriously *{color:red}blushed* when I _(big)sprouted_ that corn stalk from my %[es]cabeza%. \n\np<. align left\n\np>. align right\n\np=. centered\n\np<>. justified\n\np(. left indent 1em\n\np((. left indent 2em\n\np))). right indent 3em\n\t\n# A first item\n# A second item\n# A third\n\n# Fuel could be:\n## Coal\n## Gasoline\n## Electricity\n# Humans need only:\n## Water\n## Protein\n\n* A first item\n* A second item\n* A third\n\n* Fuel could be:\n** Coal\n** Gasoline\n** Electricity\n* Humans need only:\n** Water\n** Protein\n\n[google]http://google.com\n\nI searched \"Google\":google\n\n\n\n|_. name |_. age |_. Hair colour |\n| joan | 24 |{background:#ddd}. Grey |\n| archie | 29 |{color:#f00}. Red |\n{background:#ff0}. | bella | 45 | Black |\n\ntable{border:1px solid black;margin-top:20px}.\n|_.\\2. attribute list, spanning 2 cols |\n|<. align left |>. align right|\n|=. center |<>. justify |\n|^. valign top |~. bottom |\n|/3. spans 3 rows | a |\n| b |\n| c |\n",
-							   "edited_by": "Anon.",
-							   "edited_on": "never",
-							   "type": "page"
-							};
-					pop(HelpOnFormattingPage);
-
-					var HelpOnGettingStartedPage = {
-							   "_id": "HelpOnGettingStarted",
-							   "body": "h2. Getting started\nh3.  Edit this page\nYou probably want to edit FrontPage so you have your own content here. You can do that using the button in the top right. You can put whatever you want on this page.\n\nh3. New page\nYou can create a new page by following a link to a PageWhichDoesNotExist. For ease of use, a link to a page called NewPage is in the main navigation at the top of each page. \n\nh3. Help\nThere are a few other useful bits of help, and you can add your own as you go.\n[topic:HelpOn]\nh3. Advanced settings\nAdvanced settings for the wiki are stored in a document in Couch - the doc id is \"TAPIRWIKISETTINGS\". This sets the following:\n* The wiki name (e.g. TapirWiki)\n* The default page (e.g. FrontPage)\n* The default username for new / unknown users (e.g. Anon)\n* The pages which are linked to in the main navigation\n\nEdit this document (using Futon) to change these settings. There is no built in admin functionality in TapirWiki (yet!)\n ",
-							   "edited_by": "Anon.",
-							   "edited_on": "never",
-							   "type": "page"
-							};
-
-					pop(HelpOnGettingStartedPage);
-
+		
+					var pages = [{"_id": "_design/allPages", "edited_by": "Nobody", "language": "javascript", "views": {"titles": {"map": "function(doc) {if(doc.type == 'page'){ emit(null, { 'id': doc._id, 'rev': doc._rev, 'title': doc.title, 'body': doc.body, 'edited_on': doc.edited_on, 'edited_by': doc.edited_by }); }}"}}}, {"defaultPage": "FrontPage", "edited_by": "Nobody", "wikiName": "TapirWiki", "replicationEnabled": false, "mainMenu": ["FrontPage", "Index", "NewPage", "Help"], "replicationEndPoint": "http://hostname:5984/dbname", "defaultUserName": "Anon.", "_id": "TAPIRWIKISETTINGS"}, {"body": "h2. Welcome to your new wiki! \nWell done, it looks like your new wiki is up and running. This is the first page which users will see when coming to the wiki, unless they follow a link to a specific page. The wiki is a quick and simple way of sharing information between people.\nh2. Features\nWith your new wiki you can:\n* Easily add pages to store notes or any information\n* Anyone can edit pages so the information is easier to maintain\n* use the simple formatting to decorate your text whilst focusing on the content\n* Make use of Couch features such as replication to allow users to take the wiki offline\n* Use macros to list and include page content\n* Create page templates to provide a quick starting point for new pages (any page with a name starting with TEMPLATE_ will become a template!) \n* You can view previous versions of a page using the history button (up at the top, on the right).\n\nh2. Recent changes\nHere's what's new for this wiki.\n{recentChanges}\n\n{include:HelpOnGettingStarted}\n\nh2. Need more help?\nYou can get more help here {goto:Help}", "edited_by": "Nobody", "edited_on": "Tue Nov 24 2009 20:06:36 GMT+0000 (GMT)", "_id": "FrontPage", "type": "page"}, {"body": "h2. Index\nBelow is a list of all pages in your wiki:\n{index}", "edited_by": "Nobody", "edited_on": "Sat Nov 21 2009 04:47:59 GMT+0000 (GMT)", "_id": "Index", "type": "page"}, {"body": "h2. Help! Help! Help!\n\nThe following pages provide some useful information for using the wiki. \n\n{topic:HelpOn}\n\nYou can add to these pages by creating a new page called HelpOnBlah!", "edited_by": "Nobody", "edited_on": "Sun Nov 15 2009 15:56:45 GMT+0000 (BST)", "_id": "Help", "type": "page"}, {"body": "h2. Macros\n\nMacros are functions you can call in a wiki page. There are a few simple macros in TapirWiki, this page tells you how to use them. Looking at this page will show each macro in use. If you edit the page, you will see how to call them so that you can use them in your own pages.\n\nh3. Using a macro\nTo use a macro, simply include it in the markup for your page. Try editing this page to see how the macros are invoked. The macros are contained in curly braces {macro} and some take an additional argument {macro:argument}\n\nh4. Index\nThe index macro lists all pages in the wiki. The macro name is \"index\" and it takes no arguments. Use it as follows:\n{index}\n\nh4. Topic List\nThe topic list macro finds all pages whose names begin with a given string. The macro name is \"topic\" and the argument is the first part of the page name which must match to be listed. For example, find all help pages in the Wiki:\n{topic:HelpOn}\n\nh4. Recent Changes\nYou can provide a list of the 5 most recent page edits which have occurred using the recent changes macro. It's a nice one to include on your FrontPage so people know what's going on. The macro name is \"recentChanges\" and it takes no arguments. Use it as follows:\n{recentChanges}\n\nh4. Includes\nYou can include the content from any page within the body of any other page. Use this macro to reduce duplication in your wiki. The macro name is \"include\" and the argument is the page name to include. For example, to include the Help page:\n{include:Help}\n\nIf the page you include cannot be found, you will get an error message and a link to the page. Following the link should enable you to edit the page.\n{include:PageWhichDoesNotExistYet}\n", "edited_by": "Nobody", "edited_on": "Tue Nov 17 2009 21:25:51 GMT+0000 (BST)", "_id": "HelpOnMacros", "type": "page"}, {"body": "h1. Help on formatting\nThis page contains examples of wiki markup you can use in TapirWiki. The markup language used is called \"textile\". Edit this page to see how the markup is used.\n\nh1. Header 1\n\nh2)>. Right-aligned padded Header 2\n\nh3()=[no]{color:red}. Red centred Header 3\n\nA single paragraph.\n\nFollowed by another.\n\n<p>Some inline <b>bold</b> HTML, inside paragraph tags.</p>\n\n<pre>\n  A <i>pre</i> Section.\n</pre>\n\n\"A quoted passage with -- assorted - replaced entities... , including 2 x 2 , (TM), (R) and (C). \"\n\nbq. A block quotation.\n\nFinished with a new paragraph.\n\nbq.. a multi-line block quotation.\n\nWith a second line\n\np(biggreen). Finished with a paragraph with a class of 'biggreen'\n\np(#italic). This has an id of 'italic'\n\np(biggreen#italic). This is both class 'biggreen' and id 'italic'\n\t\np{color:blue;margin:30px}. Some inline styling, using CSS(Cascading Style Sheets).\n\np[fr]. rouge\n\nThis is covered elsewhere[1].\n\nfn1. Down here, in fact.\n\nI _believe_ every word. And then? She *fell*! I __know__. I **really** __know__. ??Cat's Cradle?? by Vonnegut. Convert with @r.to_html@ I'm -sure- not sure. You are a +pleasant+ child. a ^2^ + b ^2^ = c ^2^ log ~2~ x\n\nI'm %unaware% of most soft drinks. I'm %{color:red}unaware% of most soft drinks. I seriously *{color:red}blushed* when I _(big)sprouted_ that corn stalk from my %[es]cabeza%. \n\np<. align left\n\np>. align right\n\np=. centered\n\np<>. justified\n\np(. left indent 1em\n\np((. left indent 2em\n\np))). right indent 3em\n\t\n# A first item\n# A second item\n# A third\n\n# Fuel could be:\n## Coal\n## Gasoline\n## Electricity\n# Humans need only:\n## Water\n## Protein\n\n* A first item\n* A second item\n* A third\n\n* Fuel could be:\n** Coal\n** Gasoline\n** Electricity\n* Humans need only:\n** Water\n** Protein\n\n[google]http://google.com\n\nI searched \"Google\":google\n\n\n\n|_. name |_. age |_. Hair colour |\n| joan | 24 |{background:#ddd}. Grey |\n| archie | 29 |{color:#f00}. Red |\n{background:#ff0}. | bella | 45 | Black |\n\ntable{border:1px solid black;margin-top:20px}.\n|_.\\2. attribute list, spanning 2 cols |\n|<. align left |>. align right|\n|=. center |<>. justify |\n|^. valign top |~. bottom |\n|/3. spans 3 rows | a |\n| b |\n| c |\n", "edited_by": "Nobody", "edited_on": "Tue Nov 24 2009 20:02:14 GMT+0000 (GMT)", "_id": "HelpOnFormatting", "type": "page"}, {"body": "h2. Getting started\nh3.  Edit this page\nYou probably want to edit FrontPage so you have your own content here. You can do that using the button in the top right. You can put whatever you want on this page. As you edit pages, TapirWiki will record your changes. You can use the page history to view previous versions of each page.\n\nh3. New page\nYou can create a new page by following a link to a PageWhichDoesNotExist. For ease of use, a link to a page called NewPage is in the main navigation at the top of each page. \n\nh3. Help\nThere are a few other useful bits of help, and you can add your own as you go.\n[topic:HelpOn]\nh3. Advanced settings\nAdvanced settings for the wiki are stored in a document in Couch - the doc id is \"TAPIRWIKISETTINGS\". This sets the following:\n* The wiki name (e.g. TapirWiki)\n* The default page (e.g. FrontPage)\n* The default username for new / unknown users (e.g. Anon)\n* The pages which are linked to in the main navigation\n\nEdit this document (using Futon) to change these settings. There is no built in admin functionality in TapirWiki (yet!)\n ", "edited_by": "Nobody", "edited_on": "Tue Nov 17 2009 21:17:35 GMT+0000 (BST)", "_id": "HelpOnGettingStarted", "type": "page"}, {"body": "h2. Help on replication\n\nAs of TapirWiki 0.2, replication is supported through the wiki UI. However, it is disabled by default. Replication *{color:red}needs testing and may contain bugs or simply not work as you expect*. Please let me know if this is the case by raising an issue http://code.google.com/p/tapirwiki\n\nh3. Enable replication\n\nEnabling replication requires editing the TAPIRWIKISETTINGS document.\n\n* Open Futon (http://hostname:5984/_utils/)\n* Open the database containing your wiki (e.g. 'wiki')\n* Open the TAPIRWIKISETTINGS document - this contains a number of settings for the wiki\n* change the 'replicationEnabled' field to true\n* change the 'replicationEndPoint' field to be a URL to the central node in your wiki (e.g. 'http://remotehost:5984/wiki')\n* Save the changes to the document and refresh your wiki\n\nIf the changes are successful, a new \"Synchronise\" button should appear in the wiki navigation menu (top left). \n\nNote : The synchronise button will not be show if you are viewing the wiki from the URL of the replicationEndPoint. For example, if you are browsing the wiki at http://remotehost:5984/wiki, the button will not be shown.\n\nh3. How replication works\n\nThe replication in TapirWiki is a thin layer over the support for replication provided by CouchDB. When you press the synchronise button, the following occurs:\n\n* The remote wiki's changes are replicated to your local wiki\n* Your local wiki's changes are replicated to the remote wiki\n\nReplication only transfers the latest version of any page, so if you have a page which you have edited a lot on one computer, the historic version of the pages will remain on that computer - only the latest will be synchronised.\n\nh3. Conflicts\nConflicts occur when two or more changes are made to the same wiki page on two different instances. Any conflicts which occur should be visible through the page history. You can view the conflicting edit form here, and if you wish this version to become the most recent again, you can simply edit from that point. ", "edited_by": "Nobody", "edited_on": "Tue Nov 24 2009 20:03:14 GMT+0000 (GMT)", "_id": "HelpOnReplication", "type": "page"}]
+					for(p in pages) {
+						pop(pages[p]);
+					}
 					//Finally, let the user know installation is complete
 					$("#install-result").html("<h2>Installation complete</h2><p>Congratulations, TapirWiki has been set up correctly. Please refresh this page to access your new wiki or click <a href='./wiki.html'>here</a>.</p>");
 				}
@@ -1062,7 +975,7 @@ function pop(obj) {
 				<div id="inner-content"><p>Loading...</p></div>
 			</div>
 		</div>
-		<div id="footer"><p>Powered by <a href="http://code.google.com/p/tapirwiki/">TapirWiki</a>. Find a tapir and love it!</p></div>
+		<div id="footer"><p>Powered by <a href="http://code.google.com/p/tapirwiki/">TapirWiki</a> v0.2. Find a tapir and love it!</p></div>
 	</div>
 </body>
 </html>
