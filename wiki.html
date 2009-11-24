@@ -1,217 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-
-<!-- 
-Copyright (c) 2009 Joshua Knight
-
- Permission is hereby granted, free of charge, to any person
- obtaining a copy of this software and associated documentation
- files (the "Software"), to deal in the Software without
- restriction, including without limitation the rights to use,
- copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following
- conditions:
-
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- OTHER DEALINGS IN THE SOFTWARE.
- -->
-
 <head>
-<style>
-#content a {
-	color: #00e;
-	cursor: pointer;
-	text-decoration: none;
-	font-weight: normal
-}
-
-#content a:hover {
-	color: #a00
-}
-
-#pageTitle {
-	font-weight: normal
-}
-
-#navigation {
-	margin-left: 0.5em;
-	clear: both;
-	border-top: solid 1px #bcb;
-	font-weight: bold
-}
-
-#navigation ul {
-	margin-top: 0;
-	margin-bottom: 0;
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
-	padding-left: 0.5em
-}
-
-#navigation a {
-	color: #000;
-	background-color: #eee;
-	padding: 0.25em;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	text-decoration: none
-}
-
-#navigation a:hover {
-	background-color: #ddf
-}
-
-#main-menu {
-	float: left
-}
-
-#main-menu a {
-	text-decoration: none
-}
-
-#main-menu a:hover {
-	text-decoration: underline
-}
-
-#navigation li {
-	list-style: none;
-	display: inline;
-	padding-right: 1em;
-	padding-left: 0em
-}
-
-#page-menu {
-	float: right
-}
-
-#templates a {
-	margin-left: 1em
-}
-
-html,body {
-	padding: 0;
-	margin: 0;
-	font-family: arial, sans-serif;
-	font-size: small;
-	background: #fff;
-	color: #000
-}
-
-#header {
-	padding-left: 0.5em;
-	padding-bottom: 0;
-	margin-bottom: 0;
-	clear: both
-}
-
-#header h1 {
-	float: left
-}
-
-#header p {
-	float: right;
-	font-size: smaller;
-	padding-right: 1em
-}
-
-#wrapper {
-	clear: both
-}
-
-div#content {
-	clear: both;
-	padding: 1em;
-	border-top: solid 1px #bcb
-}
-
-div#content p {
-	line-height: 1.4
-}
-
-div#footer {
-	border-top: solid 1px #bcb;
-	color: #000;
-	clear: left
-}
-
-div#footer p {
-	color: #aaa;
-	margin: 0;
-	font-size: xx-small;
-	padding: 0.5em
-}
-
-div#footer a {
-	color: #225555;
-	text-decoration: none
-	
-	}
-
-div#navigation {
-	padding: 0;
-	margin: 0
-}
-
-div#extra {
-	clear: left;
-	width: 100%
-}
-
-label {
-	float: left;
-	margin-right: 1em;
-	text-align: left;
-	padding-left: 0px;
-	margin-left: 0;
-	font-weight: bold
-}
-
-input {
-	border: solid 1px;
-	width: 100%;
-	margin: 0;
-	font-family: arial, sans-serif;
-	font-size: small
-}
-
-textarea {
-	width: 100%;
-	height: 300px;
-	font-size: small;
-	border: solid 1px;
-	margin: 0;
-	font-family: arial, sans-serif;
-	font-size: small
-}
-
-button {
-	margin-left: 5%
-}
-
-#page-body {
-	padding-left: 0.5em;
-	margin-left: 0.5em
-}
-
-.action {
-	float: right
-}
-
-#userName {
-	color: #00e;
-	text-decoration: underline;
-	cursor: pointer;
-	marg
-}
+<style type="text/css">
+#title{border-bottom:solid 1px #ddd;border-left:none;border-right:none;border-top:none;color:#444;font-size:large}
+#content a{color:#00e;cursor:pointer;font-weight:400;text-decoration:none}
+#content a:hover{color:#a00}
+#pageTitle{font-weight:400}
+.page-list a{display:inline-block;min-width:200px}
+.page-list{padding-left: 0}
+.page-list li{color:#777;list-style-type:none;padding-bottom:.25em}
+#navigation{border-top:solid 1px #bcb;clear:both;font-weight:700;margin-left:.5em}
+#navigation ul{margin-bottom:0;margin-top:0;padding-bottom:.5em;padding-left:.5em;padding-top:.5em}
+#navigation a{color:#000;text-decoration:none}
+#page-menu a:hover{background-color:#ddf}
+#navigation li{display:inline;list-style:none;padding-left:0;padding-right:1em}
+#page-menu a{-moz-border-radius:5px;-webkit-border-radius:5px;background-color:#eee;padding:.25em}
+#page-menu a:visited{color:#00e}
+#templates a{margin-left:1em}
+html,body{background:#fff;color:#000;font-family:arial, sans-serif;font-size:small;margin:0;padding:0}
+#header{clear:both;margin-bottom:0;padding-bottom:0;padding-left:.5em}
+#header p{float:right;font-size:smaller;padding-right:1em}
+#wrapper{clear:both}
+div#content{border-top:solid 1px #bcb;clear:both;padding:1em}
+div#content p{line-height:1.4}
+div#footer{border-top:solid 1px #bcb;clear:left;color:#000}
+div#footer p{color:#aaa;font-size:xx-small;margin:0;padding:.5em}
+div#footer a{color:#255;text-decoration:none}
+div#navigation{margin:0;padding:0}
+div#extra{clear:left;width:100%}
+label{float:left;font-weight:700;margin-left:0;margin-right:1em;padding-left:0;text-align:left}
+input{border:solid 1px;font-family:arial, sans-serif;font-size:small;margin:0;width:100%}
+textarea{border:solid 1px #ddd;font-family:arial, sans-serif;font-size:small;height:300px;margin:0;width:100%}
+button{margin-left:5%}
+#page-body{margin-left:.5em;padding-left:.5em}
+#userName{color:#00e;cursor:pointer;text-decoration:underline}
+#main-menu,#header h1{float:left}
+#page-menu,.action{float:right}
 </style>
 
 
@@ -312,7 +136,7 @@ var trstyle = /^\{(\S+)\}\.\s*\|/;
 // Linking macros
 var wikiLink = /([A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*)/;
 var goToMacro = /\{goto:(.*?)\}/;
-var linkReplacement = "<a href=\"#$1\" onClick=\"Javascript:wiki.open($1);\">$1</a>";
+var linkReplacement = '<a href="#$1" onClick="javascript: wiki.load()">$1</a>';
 
 // Index Macros
 var indexMacro = /\{index\}/;
@@ -559,6 +383,16 @@ throw new SyntaxError('JSON.parse');};}}());
   Original work: Joshua Knight
 */
 
+String.prototype.toCamelCase = function() {
+	  return this.toString()
+	    .replace(/([A-Z]+)/g, function(m,l){
+	      return l.substr(0,1).toUpperCase() + l.toLowerCase().substr(1,l.length);
+	    })
+	    .replace(/[\-_\s](.)/g, function(m, l){
+	      return l.toUpperCase();
+	    });
+	};
+
 //Set some settings...
 var settings;
 
@@ -574,16 +408,18 @@ wiki.type = "page";
 
 wiki.save = function() {
 
+	if(wiki._rev == null)
+	{
+		wiki._id = $("#title").val();
+	}
+	
 	if(wiki._id == "")
 	{
 		alert("Please enter a page title!");
 	}
 	else {
 
-	if(wiki._rev == null)
-	{
-		wiki._id = $("#title").val();
-	}
+	
 
 	wiki.body = $("#body").val();
 	wiki.edited_by = $.cookie("userName");
@@ -616,7 +452,6 @@ wiki.display = function() {
 	$("<li class='pageSpecific'><a href='Javascript: wiki.history()'>History</a></li>").appendTo("#page-menu");
 	$("<li class='pageSpecific'><a href='Javascript: wiki.remove()'>Delete</a></li>").appendTo("#page-menu");
 	window.location = "wiki.html#" + this._id;
-
 }
 
 wiki.init = function() {
@@ -673,18 +508,20 @@ wiki.edit = function() {
 		if(wiki._rev)
 		{
 			//if there is a revision, it is an existing page and the title should be displayed read only
-			$("<p><label for='title'>Title</label>" + this._id + "</p>").appendTo(form);
+			$("<p id='title'>" + this._id + "</p>").appendTo(form);
 		}
 
 		else
 		{
 			//if no revision, it's a new page and we should let the user enter a page name
 
-			$("<p><label for='title'>Title</label><input id='title' type='text' value='" + this._id + "'/></p>").appendTo(form);
+			$("<p><input id='title' type='text' value='" + this._id + "'/></p>").appendTo(form);
+			$("#title").focus();
 
-			if(this._id = "NewPage") {
-				$("#title").val("");
-			}
+			$("#title").blur(function() {
+				var newTitle = $("#title").val().toCamelCase();
+				$("#title").val(newTitle); 
+			});
 
 			var pages;
 			$.ajax({
@@ -700,7 +537,7 @@ wiki.edit = function() {
 				pageContent = "INCLUDE ERROR!" + id + " does not exist yet...";
 				 }
 			});
-
+			//create the templates region.
 			var templatesDiv = $("<div id='templates'>Page templates:<a id='shower'>Show</a></div>").appendTo(form);
 			var templatesList = $("<ul id='templatesList'></ul>").hide().appendTo(templatesDiv);
 			$("#shower").click(function() {
@@ -735,7 +572,7 @@ wiki.edit = function() {
 			}
 
 		}
-		$("<p><label for='body'>Content</label><textarea id='body'>" + this.body + "</textarea></p>").appendTo(form);
+		$("<p><textarea id='body'>" + this.body + "</textarea></p>").appendTo(form);
 
 		$("#page-menu").html("");
 		$("<li><a href='Javascript: wiki.save();'>Save</a></li>").appendTo("#page-menu").fadeIn("slow");
@@ -888,11 +725,16 @@ wiki.sync = function() {
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
 			alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText);
 		}
-	});
-
-	
+	});	
 }
 
+wiki.load = function() {
+	//I'm pretty sure this is horrible...need to wait for the location to be updated before opening the page
+	setTimeout(function() {
+		var requestedPage = location.hash.substring(1);
+		wiki.open(requestedPage);
+	}, 200);
+}
 
 //Finally, some miscellaneous useful functions
 function identify() {
@@ -993,7 +835,7 @@ function recentChanges() {
 				{
 					var p = pages.rows[x];
 					html += "<li><a href='#" + p.id + "' onClick='Javascript: wiki.open(\"" + p.id + "\")'>" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
-				}
+					}
 		html += "</ul>";
 		return html;
 	}
