@@ -39,8 +39,29 @@ textarea{border:solid 1px #ddd;font-family:arial, sans-serif;font-size:small;hei
 #userName{color:#00e;cursor:pointer;text-decoration:underline}
 
 #upload-button{margin-top: 0.5em}
+.error {background-color: #00ff00}
+div.jGrowl{padding:10px; z-index:9999; color:#fff; font-size:12px}
+div.ie6{position:absolute}
+div.ie6.top-right{right:auto; bottom:auto; left:expression( ( 0 - jGrowl.offsetWidth+( document.documentElement.clientWidth ? document.documentElement.clientWidth:document.body.clientWidth )+( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft:document.body.scrollLeft ) )+'px' );  top:expression( ( 0+( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop:document.body.scrollTop ) )+'px' )}
+div.ie6.top-left{left:expression( ( 0+( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft:document.body.scrollLeft ) )+'px' ); top:expression( ( 0+( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop:document.body.scrollTop ) )+'px' )}
+div.ie6.bottom-right{left:expression( ( 0 - jGrowl.offsetWidth+( document.documentElement.clientWidth ? document.documentElement.clientWidth:document.body.clientWidth )+( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft:document.body.scrollLeft ) )+'px' ); top:expression( ( 0 - jGrowl.offsetHeight+( document.documentElement.clientHeight ? document.documentElement.clientHeight:document.body.clientHeight )+( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop:document.body.scrollTop ) )+'px' )}
+div.ie6.bottom-left{left:expression( ( 0+( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft:document.body.scrollLeft ) )+'px' ); top:expression( ( 0 - jGrowl.offsetHeight+( document.documentElement.clientHeight ? document.documentElement.clientHeight:document.body.clientHeight )+( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop:document.body.scrollTop ) )+'px' )}
+div.ie6.center{left:expression( ( 0+( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft:document.body.scrollLeft ) )+'px' ); top:expression( ( 0+( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop:document.body.scrollTop ) )+'px' ); width:100%}
+body >div.jGrowl{position:fixed}
+body >div.jGrowl.top-left{left:0px; top:0px}
+body >div.jGrowl.top-right{right:0px; top:0px}
+body >div.jGrowl.bottom-left{left:0px; bottom:0px}
+body >div.jGrowl.bottom-right{right:0px; bottom:0px}
+body >div.jGrowl.center{top:0px; width:50%; left:25%}
+div.center div.jGrowl-notification, div.center div.jGrowl-closer{margin-left:auto; margin-right:auto}
+div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer{background-color:#000; opacity:.85;  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=85)";  filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=85); zoom:1; width:235px; padding:10px; margin-top:5px; margin-bottom:5px; font-family:Tahoma,Arial,Helvetica,sans-serif; font-size:1em; text-align:left; display:none; -moz-border-radius:5px; -webkit-border-radius:5px}
+div.jGrowl div.jGrowl-notification{min-height:40px}
+div.jGrowl div.jGrowl-notification div.header{font-weight:bold; font-size:.85em}
+div.jGrowl div.jGrowl-notification div.close{z-index:99; float:right; font-weight:bold; font-size:1em; cursor:pointer}
+div.jGrowl div.jGrowl-closer{padding-top:4px; padding-bottom:4px; cursor:pointer; font-size:.9em; font-weight:bold; text-align:center}
+@media print{div.jGrowl{display:none}
+}
 </style>
-
 
 <script type="text/javascript">
 /*
@@ -277,7 +298,7 @@ $.fn.ajaxSubmit = function(options) {
 		var form = $form[0];
 
 		if ($(':input[name=submit]', form).length) {
-			alert('Error: Form elements must not be named "submit".');
+			error('Error: Form elements must not be named "submit".');
 			return;
 		}
 
@@ -766,6 +787,21 @@ function log() {
 };
 
 })(jQuery);
+
+
+
+(function($){$.jGrowl=function(m,o){if($('#jGrowl').size()==0)
+	$('<div id="jGrowl"></div>').addClass($.jGrowl.defaults.position).appendTo('body');$('#jGrowl').jGrowl(m,o);};$.fn.jGrowl=function(m,o){if($.isFunction(this.each)){var args=arguments;return this.each(function(){var self=this;if($(this).data('jGrowl.instance')==undefined){$(this).data('jGrowl.instance',$.extend(new $.fn.jGrowl(),{notifications:[],element:null,interval:null}));$(this).data('jGrowl.instance').startup(this);}
+	if($.isFunction($(this).data('jGrowl.instance')[m])){$(this).data('jGrowl.instance')[m].apply($(this).data('jGrowl.instance'),$.makeArray(args).slice(1));}else{$(this).data('jGrowl.instance').create(m,o);}});};};$.extend($.fn.jGrowl.prototype,{defaults:{pool:0,header:'',group:'',sticky:false,position:'top-right',glue:'after',theme:'default',corners:'10px',check:250,life:3000,speed:'normal',easing:'swing',closer:true,closeTemplate:'&times;',closerTemplate:'<div>[ close all ]</div>',log:function(e,m,o){},beforeOpen:function(e,m,o){},open:function(e,m,o){},beforeClose:function(e,m,o){},close:function(e,m,o){},animateOpen:{opacity:'show'},animateClose:{opacity:'hide'}},notifications:[],element:null,interval:null,create:function(message,o){var o=$.extend({},this.defaults,o);this.notifications.push({message:message,options:o});o.log.apply(this.element,[this.element,message,o]);},render:function(notification){var self=this;var message=notification.message;var o=notification.options;var notification=$('<div class="jGrowl-notification ui-state-highlight ui-corner-all'+
+	((o.group!=undefined&&o.group!='')?' '+o.group:'')+'">'+'<div class="close">'+o.closeTemplate+'</div>'+'<div class="header">'+o.header+'</div>'+'<div class="message">'+message+'</div></div>').data("jGrowl",o).addClass(o.theme).children('div.close').bind("click.jGrowl",function(){$(this).parent().trigger('jGrowl.close');}).parent();$(notification).bind("mouseover.jGrowl",function(){$('div.jGrowl-notification',self.element).data("jGrowl.pause",true);}).bind("mouseout.jGrowl",function(){$('div.jGrowl-notification',self.element).data("jGrowl.pause",false);}).bind('jGrowl.beforeOpen',function(){if(o.beforeOpen.apply(notification,[notification,message,o,self.element])!=false){$(this).trigger('jGrowl.open');}}).bind('jGrowl.open',function(){if(o.open.apply(notification,[notification,message,o,self.element])!=false){if(o.glue=='after'){$('div.jGrowl-notification:last',self.element).after(notification);}else{$('div.jGrowl-notification:first',self.element).before(notification);}
+	$(this).animate(o.animateOpen,o.speed,o.easing,function(){if($.browser.msie&&(parseInt($(this).css('opacity'),10)===1||parseInt($(this).css('opacity'),10)===0))
+	this.style.removeAttribute('filter');$(this).data("jGrowl").created=new Date();});}}).bind('jGrowl.beforeClose',function(){if(o.beforeClose.apply(notification,[notification,message,o,self.element])!=false)
+	$(this).trigger('jGrowl.close');}).bind('jGrowl.close',function(){$(this).data('jGrowl.pause',true);$(this).animate(o.animateClose,o.speed,o.easing,function(){$(this).remove();var close=o.close.apply(notification,[notification,message,o,self.element]);if($.isFunction(close))
+	close.apply(notification,[notification,message,o,self.element]);});}).trigger('jGrowl.beforeOpen');if($.fn.corner!=undefined)$(notification).corner(o.corners);if($('div.jGrowl-notification:parent',self.element).size()>1&&$('div.jGrowl-closer',self.element).size()==0&&this.defaults.closer!=false){$(this.defaults.closerTemplate).addClass('jGrowl-closer ui-state-highlight ui-corner-all').addClass(this.defaults.theme).appendTo(self.element).animate(this.defaults.animateOpen,this.defaults.speed,this.defaults.easing).bind("click.jGrowl",function(){$(this).siblings().children('div.close').trigger("click.jGrowl");if($.isFunction(self.defaults.closer)){self.defaults.closer.apply($(this).parent()[0],[$(this).parent()[0]]);}});};},update:function(){$(this.element).find('div.jGrowl-notification:parent').each(function(){if($(this).data("jGrowl")!=undefined&&$(this).data("jGrowl").created!=undefined&&($(this).data("jGrowl").created.getTime()+$(this).data("jGrowl").life)<(new Date()).getTime()&&$(this).data("jGrowl").sticky!=true&&($(this).data("jGrowl.pause")==undefined||$(this).data("jGrowl.pause")!=true)){$(this).trigger('jGrowl.beforeClose');}});if(this.notifications.length>0&&(this.defaults.pool==0||$(this.element).find('div.jGrowl-notification:parent').size()<this.defaults.pool))
+	this.render(this.notifications.shift());if($(this.element).find('div.jGrowl-notification:parent').size()<2){$(this.element).find('div.jGrowl-closer').animate(this.defaults.animateClose,this.defaults.speed,this.defaults.easing,function(){$(this).remove();});}},startup:function(e){this.element=$(e).addClass('jGrowl').append('<div class="jGrowl-notification"></div>');this.interval=setInterval(function(){$(e).data('jGrowl.instance').update();},this.defaults.check);if($.browser.msie&&parseInt($.browser.version)<7&&!window["XMLHttpRequest"]){$(this.element).addClass('ie6');}},shutdown:function(){$(this.element).removeClass('jGrowl').find('div.jGrowl-notification').remove();clearInterval(this.interval);},close:function(){$(this.element).find('div.jGrowl-notification').each(function(){$(this).trigger('jGrowl.beforeClose');});}});$.jGrowl.defaults=$.fn.jGrowl.prototype.defaults;})(jQuery);
+
+
+
 		</script>
 
 
@@ -823,6 +859,49 @@ function convert(t) {
 	}
 	for(i=0;i<lines.length;i++) {
 		if (lines[i].indexOf("[") == 0) {continue;}
+
+
+		/***************************************
+		*
+		*	TapirWiki specific macros
+		*
+		****************************************/
+				//index macro
+				if (lines[i].match(indexMacro)) {
+					html += lines[i].replace(indexMacro, index());
+					continue;
+				}
+
+				if (lines[i].match(recentChangesMacro)) {
+					html += lines[i].replace(recentChangesMacro, recentChanges());
+					continue;
+				}
+
+				//topic macro
+				if(lines[i].match(topicMacro)) {
+					var topicTitle = lines[i].replace(topicMacro, "$1");
+					if(lines[i] != topicTitle)
+					{
+							html += topicList(topicTitle);
+							continue;
+					}
+				}
+
+				//include macro
+				if(lines[i].match(includeMacro)) {
+					var pid = lines[i].replace(includeMacro, "$1");
+					if(lines[i] != pid)
+					{
+							html += includePage(pid);
+							continue;
+					}
+				}
+
+		
+		//magic wiki links 
+		if(lines[i].match(wikiLink)) {lines[i]=prep(lines[i].replace(wikiLink, linkReplacement));}
+		//goto macro - force a wiki link
+		if(lines[i].match(goToMacro)) {lines[i]=prep(lines[i].replace(goToMacro, linkReplacement));}
 		if(mm=para.exec(lines[i])){stp(1);inpr=1;html += lines[i].replace(para,"<p"+make_attr(mm[1])+">"+prep(mm[2]));continue;}
 		if(mm = /^h(\d)(\S*)\.\s*(.*)/.exec(lines[i])){stp(1);html += tag("h"+mm[1],make_attr(mm[2]),prep(mm[3]))+le;continue;}
 		if(mm=rfn.exec(lines[i])){stp(1);inpr=1;html+=lines[i].replace(rfn,'<p id="fn'+mm[1]+'"><sup>'+mm[1]+'</sup>'+prep(mm[2]));continue;}
@@ -868,53 +947,6 @@ function convert(t) {
 		}
 		if(intable) {html += "</table>"+le;intable=0;}
 
-/***************************************
-*
-*	TapirWiki specific macros
-*
-****************************************/
-		//index macro
-		if (lines[i].match(indexMacro)) {
-			html += lines[i].replace(indexMacro, index());
-			continue;
-		}
-
-		if (lines[i].match(recentChangesMacro)) {
-			html += lines[i].replace(recentChangesMacro, recentChanges());
-			continue;
-		}
-
-		//topic macro
-		if(lines[i].match(topicMacro)) {
-			var topicTitle = lines[i].replace(topicMacro, "$1");
-			if(lines[i] != topicTitle)
-			{
-					html += topicList(topicTitle);
-					continue;
-			}
-		}
-
-		//include macro
-		if(lines[i].match(includeMacro)) {
-			var pid = lines[i].replace(includeMacro, "$1");
-			if(lines[i] != pid)
-			{
-					html += includePage(pid);
-					continue;
-			}
-		}
-
-		//magic wiki links
-		if(lines[i].match(wikiLink)) {
-			html += prep(lines[i].replace(wikiLink, linkReplacement));
-			continue;
-		}
-
-		//goto macro - force a wiki link
-		if(lines[i].match(goToMacro)) {
-			html += prep(lines[i].replace(goToMacro, linkReplacement));
-			continue;
-		}
 
 
 		if (lines[i]=="") {stp();}
@@ -1091,7 +1123,7 @@ wiki.save = function() {
 	
 	if(wiki._id == "")
 	{
-		alert("Please enter a page title!");
+		error("Please enter a page title!");
 	}
 	else {
 	wiki.body = $("#body").val();
@@ -1107,9 +1139,10 @@ wiki.save = function() {
 			var response = JSON.parse(data);
 			wiki._rev = response.rev;
 			wiki.open(wiki._id);
+			$.jGrowl("Your page has been saved...", {header: "Cool!"});
 		},
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
-			alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
+			error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
 	});
 	}
 	
@@ -1143,6 +1176,7 @@ wiki.remove = function() {
 	type:	'delete',
 	url:	'../' + wiki._id + '?rev=' + wiki._rev,
 	success:	function(){
+		$.jGrowl("Page has been deleted...", {header: "Cool!"});
 		$("#page-body").fadeOut("slow", wiki.open('FrontPage'));
 		},
 	error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -1280,7 +1314,7 @@ wiki.remove = function() {
 				$("#page-body").fadeOut("slow", wiki.open('Index'));
 				},
 			error: function (XMLHttpRequest, textStatus, errorThrown) {
-				alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
+				error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
 			});
 }
 
@@ -1307,7 +1341,7 @@ wiki.history = function() {
 				oldPages.push(page);
 			},
 			error: function (XMLHttpRequest, textStatus, errorThrown) {
-				alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
+				error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
 		});
 		rev--;
 	}
@@ -1330,13 +1364,13 @@ wiki.history = function() {
 						oldPages.push(page);
 					},
 					error: function (XMLHttpRequest, textStatus, errorThrown) {
-						alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
+						error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
 					}				
 				});
 			}
 	},
 	error: function (XMLHttpRequest, textStatus, errorThrown) {
-		alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
+		error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
 	}
 	});
 
@@ -1387,7 +1421,7 @@ wiki.sync = function() {
 			$('#page-body').html("Synchronisation complete!");
 		},
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
-			alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
+			error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
 		}
 	});
 	//and local to remote
@@ -1399,7 +1433,7 @@ wiki.sync = function() {
 			$('#page-body').html("Synchronisation complete!");
 		},
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
-			alert("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText);
+			error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText);
 		}
 	});	
 }
@@ -1418,7 +1452,7 @@ wiki.attachments = function() {
 	
 		$("<h3>New attachment</h3><form id='attachment-form' method='post' action='' content-type='multipart/form-data'><input id='_attachments' type='file' name='_attachments'/><input type='hidden' name='_rev' value='" + wiki._rev + "'/></form><button id='upload-button'>Upload File</button>").appendTo('#page-body');
 		$("#attachment-form").ajaxForm(function() { 
-            alert("Thank you for your comment!"); 
+            error("Thank you for your comment!"); 
         });
         
 		var options = { 
@@ -1453,8 +1487,7 @@ function identify() {
 }
 
 function error(msg) {
-	//TODO: Make this nice.
-	alert(msg);
+	$.jGrowl(msg, {header: "Uh Oh!"});
 }
 
 var pageContent = "";
@@ -1683,7 +1716,7 @@ function pop(obj) {
 				<div id="inner-content"><p>Loading...</p></div>
 			</div>
 		</div>
-		<div id="footer"><p>Powered by <a href="http://code.google.com/p/tapirwiki/">TapirWiki</a> v0.3. Find a tapir and love it!</p></div>
+		<div id="footer"><p>Powered by <a href="http://code.google.com/p/tapirwiki/">TapirWiki</a> v0.3.1. Find a tapir and love it!</p></div>
 	</div>
 </body>
 </html>
