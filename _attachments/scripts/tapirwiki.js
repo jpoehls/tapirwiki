@@ -35,6 +35,7 @@ wiki.edited_by = "";
 wiki.edited_on = "";
 wiki.type = "page";
 
+
 wiki.save = function() {
 
 	if(wiki._rev == null)
@@ -80,6 +81,7 @@ wiki.display = function() {
 	$("<li class='pageSpecific'><a href='Javascript: wiki.attachments()'>Attachments</a></li>").appendTo("#page-menu");
 	$("<li class='pageSpecific'><a href='Javascript: wiki.remove()'>Delete</a></li>").appendTo("#page-menu");
 	window.location = "wiki.html#" + this._id;
+        $.tapirWiki.pageChangeReset(this._id);
 };
 
 wiki.init = function() {
@@ -133,7 +135,7 @@ wiki.open = function(id) {
 };
 
 wiki.edit = function() {
-
+                $.tapirWiki.pageChangeReset(this._id);
 		$("#inner-content").html("");
 		$("<h2>" + this._id + "</h2>");
 
@@ -523,6 +525,7 @@ var pages;
 }
 
 
+
 //And finally...when the document is ready...
 
 $(document).ready(function()
@@ -557,6 +560,8 @@ $(document).ready(function()
 				    //If it's blank, lets get it from settings
 				    requestedPage  = settings.defaultPage;
 			    }
+                            // JV: set it as the base page for pathfinder
+                            
 
 			    //Now let's open the page
 			    wiki.open(requestedPage);
@@ -611,4 +616,6 @@ function pop(obj) {
 }
 
 
-
+//JV trial
+// $(document).bind("openwiki", function (e, params) { wiki.open(params.id);}); this is nonsense we don't want a click event
+//$(document).pathbinder(wiki.open,":id");
