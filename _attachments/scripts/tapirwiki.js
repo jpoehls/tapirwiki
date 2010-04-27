@@ -27,15 +27,28 @@ var settings;
 
 function addBreadcrum(pageName) {
 	
-	var crumbs = $("#breadcrumbs"); 
-	if(crumbs.children().size() > 4) {
-		$("#breadcrumbs :first-child").fadeOut(300, function() { $(this).remove(); });
-	}
-	
-	if($("#breadcrumbs :last-child").html() != (pageName)) {
+	//now, see if we already have the page in the list
+	var visited = false;
+	$("#breadcrumbs li").each(function(i){
+		if($(this).html() == pageName){
+			visited = true;
+		};
+	});
+	//now, if we need to add a page we create the new crumb and remove the oldest
+	if(visited == false && pageName != '') {
 		var bc = $("<li>" + pageName + "</li>");
 		bc.click(function(){wiki.open(pageName)});
+		bc.hide();
+		
+		
+		var crumbs = $("#breadcrumbs"); 
+		//remove the first breadcrumb if there are more than 4
+		if(crumbs.children().size() > 4) {
+			$("#breadcrumbs :first-child").fadeOut(300, function() { $(this).remove(); });
+		}
+		
 		bc.appendTo(crumbs);
+		bc.fadeIn(400);
 	}
 }
 
@@ -234,7 +247,13 @@ wiki.edit = function() {
 		
 		$("#page-menu").html("");
 		$("<li><a href='Javascript: wiki.save();'>Save</a></li>").appendTo("#page-menu").fadeIn("slow");
-		$("<li><a href='Javascript: wiki.display();'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
+		
+		
+		if(this._rev == undefined){
+			$("<li><a href='Javascript: wiki.open(\"" + settings.defaultPage + "\");'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
+		} else {
+			$("<li><a href='Javascript: wiki.display();'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
+		}
 		$("#pageTitle").html("New page");
 };
 
@@ -335,7 +354,7 @@ wiki.history = function() {
 		}
 
 		wiki.previousVersions[oldPages[page]._rev] = oldPages[page];
-		if(oldPages[page].comment == undefined){
+		if(oldPages[page].comment == undefined || oldPages[page].comment == ''){
 			var comment = '';
 		} else {
 			var comment = '<span class="comment">&quot;' + oldPages[page].comment + "&quot;</span>"

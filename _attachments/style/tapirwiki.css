@@ -10,25 +10,25 @@
 #navigation a{color:#000;text-decoration:none; opacity: 0.7}
 #navigation a:hover{opacity: 1.0}
 #navigation li{display:inline;list-style:none;padding-left:0;padding-right:1em}
-#main-menu {border-right: dashed 1px #B3B3B3; margin-right: 0.5em;}
 #page-menu a{-moz-border-radius:5px;-webkit-border-radius:5px;background-color:#eee;padding:.25em;-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.3); -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.3)}
 #page-menu a:visited{color:#00e}
 #page-menu a:hover{background-color:#ddf}
 #page-menu,.action{float:right}
 #main-menu,#header h1{float:left}
 #main-menu a{text-shadow: white 0px 2px 2px}
-
-#breadcrumbs {float:left}
+#breadcrumb-bar {margin:0;padding:0}
+#breadcrumbs {float:left; padding:0 0 0 0.5em}
+#breadcrumbs li {display:inline;list-style:none;padding-left:0;padding-right:0.75em}
 #breadcrumbs li{cursor:pointer;font-weight:normal; color:#B3B3B3}
 #breadcrumbs li:hover{color: #000;}
-
+#breadcrumbs li:before{content: "> "}
 
 #templates a{margin-left:1em}
 html,body{background:#fff;color:#000;font-family:arial, sans-serif;font-size:small;margin:0;padding:0}
 #header{clear:both;margin-bottom:0;padding-bottom:0;padding-left:.5em; background-color: #f1f1f1}
 #header p{float:right;font-size:smaller;padding-right:1em}
 #wrapper{clear:both}
-div#content{clear:both;padding:1em}
+div#content{clear:both;padding:0em 1em 1em 1em}
 div#content p{line-height:1.4}
 div#footer{border-top:solid 1px #bcb;clear:left;color:#000}
 div#footer p{color:#aaa;font-size:xx-small;margin:0;padding:.5em}
