@@ -141,9 +141,13 @@ function maketapirwikiparseandreplace(){
         }
         else if (tnode.type == "#blocktoken"){              
             tnode.value=tnode.value.replace(tokens.indexMacro.re, tokens.indexMacro.sub());
-            tnode.value=tnode.value.replace(tokens.topicMacro.re, tokens.topicMacro.sub("$1"));
+            
+            var tid = tnode.value.replace(tokens.topicMacro.re, "$1");
+            tnode.value=tnode.value.replace(tokens.topicMacro.re, tokens.topicMacro.sub(tid));
             tnode.value=tnode.value.replace(tokens.recentChangesMacro.re, tokens.recentChangesMacro.sub());
-            tnode.value=tnode.value.replace(tokens.includeMacro.re, tokens.includeMacro.sub("$1"));
+            
+            var pid = tnode.value.replace(tokens.includeMacro.re, "$1");
+            tnode.value=tnode.value.replace(tokens.includeMacro.re, tokens.includeMacro.sub(pid));
             tnode.value=tnode.value.replace(tokens.goToMacro.re, tokens.goToMacro.sub); // can appear both as line and block token!
          }
         else if (tnode.type == "#linetoken"){
