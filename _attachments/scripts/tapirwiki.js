@@ -25,6 +25,20 @@ String.prototype.toCamelCase = function() {
 //Set some settings...
 var settings;
 
+function addBreadcrum(pageName) {
+	
+	var crumbs = $("#breadcrumbs"); 
+	if(crumbs.children().size() > 4) {
+		$("#breadcrumbs :first-child").fadeOut(300, function() { $(this).remove(); });
+	}
+	
+	if($("#breadcrumbs :last-child").html() != (pageName)) {
+		var bc = $("<li>" + pageName + "</li>");
+		bc.click(function(){wiki.open(pageName)});
+		bc.appendTo(crumbs);
+	}
+}
+
 wiki = new Object();
 
 //wiki page properties
@@ -34,6 +48,7 @@ wiki.body = "";
 wiki.edited_by = "";
 wiki.edited_on = "";
 wiki.type = "page";
+wiki.comment = "";
 
 
 wiki.save = function() {
@@ -51,6 +66,7 @@ wiki.save = function() {
 	wiki.body = $("#body").val();
 	wiki.edited_by = $.cookie("userName");
 	wiki.edited_on = Date();
+	wiki.comment = $("#comment").val();
 
 	$.ajax({
 		type:	'put',
@@ -81,7 +97,10 @@ wiki.display = function() {
 	$("<li class='pageSpecific'><a href='Javascript: wiki.attachments()'>Attachments</a></li>").appendTo("#page-menu");
 	$("<li class='pageSpecific'><a href='Javascript: wiki.remove()'>Delete</a></li>").appendTo("#page-menu");
 	window.location = "wiki.html#" + this._id;
-        $.tapirWiki.pageChangeReset(this._id);
+    $.tapirWiki.pageChangeReset(this._id);
+    
+    
+    
 };
 
 wiki.init = function() {
@@ -125,6 +144,7 @@ wiki.open = function(id) {
 			wiki.edited_by = page.edited_by;
 			wiki._attachments = page._attachments;
 			wiki.display();
+			addBreadcrum(wiki._id);
 			},
 
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -210,8 +230,11 @@ wiki.edit = function() {
 		}
 		$("<p><textarea id='body'>" + this.body + "</textarea></p>").appendTo(form);
 
+		$("<p><label>Comment:</label><input type='text' placeholder='Enter update comment here...' id='comment'/></p>").appendTo(form);
+		
 		$("#page-menu").html("");
 		$("<li><a href='Javascript: wiki.save();'>Save</a></li>").appendTo("#page-menu").fadeIn("slow");
+		$("<li><a href='Javascript: wiki.display();'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
 		$("#pageTitle").html("New page");
 };
 
@@ -312,8 +335,12 @@ wiki.history = function() {
 		}
 
 		wiki.previousVersions[oldPages[page]._rev] = oldPages[page];
-		
-		$('<li>' + event + ' on ' + oldPages[page].edited_on + ' by ' + oldPages[page].edited_by + '<a id="' + oldPages[page]._rev + '"> View</a></li>').appendTo('#history');
+		if(oldPages[page].comment == undefined){
+			var comment = '';
+		} else {
+			var comment = '<span class="comment">&quot;' + oldPages[page].comment + "&quot;</span>"
+		}
+		$('<li class="history-item"><a id="' + oldPages[page]._rev + '">' + event + ' on ' + oldPages[page].edited_on + ' by ' + oldPages[page].edited_by + '</a>' + comment +'</li>').appendTo('#history');
 		$('#' + oldPages[page]._rev).click(function(){
 			wiki.body = wiki.previousVersions[this.id].body;
 			wiki.display();
