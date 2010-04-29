@@ -27,28 +27,30 @@ var settings;
 
 function addBreadcrum(pageName) {
 	
-	//now, see if we already have the page in the list
-	var visited = false;
-	$("#breadcrumbs li").each(function(i){
-		if($(this).html() == pageName){
-			visited = true;
-		};
-	});
-	//now, if we need to add a page we create the new crumb and remove the oldest
-	if(visited == false && pageName != '') {
-		var bc = $("<li>" + pageName + "</li>");
-		bc.click(function(){wiki.open(pageName)});
-		bc.hide();
-		
-		
-		var crumbs = $("#breadcrumbs"); 
-		//remove the first breadcrumb if there are more than 4
-		if(crumbs.children().size() > 4) {
-			$("#breadcrumbs :first-child").fadeOut(300, function() { $(this).remove(); });
+	//see if the new page is the last page visited
+	
+	if($("#breadcrumbs :last").html() != pageName) {
+	
+		$("#breadcrumbs li").each(function(i){
+			if($(this).html() == pageName){
+				$(this).fadeOut(300, function() { $(this).remove(); });
+			};
+		});
+		//now, if we need to add a page we create the new crumb and remove the oldest
+		if(pageName != '') {
+			var bc = $("<li>" + pageName + "</li>");
+			bc.click(function(){wiki.open(pageName)});
+			bc.hide();
+			
+			var crumbs = $("#breadcrumbs"); 
+			//remove the first breadcrumb if there are more than 4
+			if(crumbs.children().size() > 4) {
+				$("#breadcrumbs :first-child").fadeOut(300, function() { $(this).remove(); });
+			}
+			
+			bc.appendTo(crumbs);
+			bc.fadeIn(300);
 		}
-		
-		bc.appendTo(crumbs);
-		bc.fadeIn(400);
 	}
 }
 

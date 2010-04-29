@@ -19,7 +19,7 @@
 #breadcrumb-bar {margin:0;padding:0}
 #breadcrumbs {float:left; padding:0 0 0 0.5em}
 #breadcrumbs li {display:inline;list-style:none;padding-left:0;padding-right:0.75em}
-#breadcrumbs li{cursor:pointer;font-weight:normal; color:#B3B3B3}
+#breadcrumbs li{cursor:pointer;font-weight:normal; color:#B3B3B3;font-size:xx-small}
 #breadcrumbs li:hover{color: #000;}
 #breadcrumbs li:before{content: "> "}
 
