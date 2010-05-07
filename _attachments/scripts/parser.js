@@ -78,12 +78,12 @@ function makeTextileParser(){
                    footref     : {re : /(?:^|\W)\w+(\[()()(\d+)\])/, ct : []},
                    // footnote no class/id attributes as assigned automatically
                    footnote    : {re : /(^fn(\d+)((?:<|>|=|<>)?[()]*(?:\[[a-z][a-z]\])?(?:\{\S*\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-		   texlinkurl  : {re : /("((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^"]+)":((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(\s|$)))*)?))/i, ct : phrase}, 
+		   texlinkurl  : {re : /("((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^"]+)":((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(?:\s|$)))*)?))/i, ct : phrase}, 
                    // image $3 is empty $4 is src file $5 is title $6 is link if any
-                   image       : {re : /(!((?:[<>()]*)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)?()(\S+?)(\(.*\))?!(?::((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(\s|$)))*)?))?)/i, ct : []},
+                   image       : {re : /(!((?:[<>()]*)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)?()(\S+?)(\(.*\))?!(?::((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(?:\s|$)))*)?))?)/i, ct : []},
                    pre         : {re : /(^pre\.\s()((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : []}, // pre has a different meaning in textile. It is really the same as bc. but without the code formatting.
                    // link alias name m[2] value m[4]
-                   linkalias   : {re : /(^\[(\w+?)\]()((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(\s|$)))*)?))/im, ct : []},
+                   linkalias   : {re : /(^\[(\w+?)\]()((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(?:\s|$)))*)?))/im, ct : []},
                    aliaslink   : {re : /("((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^"]+)":(\w+))/i, ct : phrase}, 
                    // below muchachos get special nodes the payload is put in value (m[2])
                    notextilebl : {re : /(^notextile\.\s((?:.|\n)*?(?:\n\n|\r\n\r\n|$(?!\n))))/m, ct : []},
