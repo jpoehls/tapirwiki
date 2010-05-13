@@ -131,13 +131,18 @@ function makehtmlrenderer(){
                     tag +=tnode.type=="footnote"?" id=\"fn"+tnode.value[1]+"\" class=\"footnote\"><sup>"+tnode.value[1]+"</sup":"";
                     tag +=tnode.type=="footref"?" class=\"footnote\"><a href=#fn"+tnode.value[1]+">"+tnode.value[1]+"</a":"";                
                     if (tnode.type=="image"){  // is the only empty tag in textile
-                        tag +=" src=\""+tnode.value[1]+"\" "; 
+                    	if(tnode.value[1].substring(4,0) == "http"){
+                    		tag +=" src=\""+tnode.value[1]+"\" ";//if src starts with http, include the src as provided so that it points to an external file 
+                        } else
+                    	{
+                        	tag +=" src=\"../../"+wiki._id+"/"+tnode.value[1]+"\" ";//else, update the src so that it points to a wiki attachment of the current page
+                    	}
                         tag +=tnode.value[2]!=""?" title=\""+tnode.value[2]+"\" alt=\""+tnode.value[2]+"\" ":"";
-                        if (tnode.value[3]!=""){
-                            tag = "<a href=\""+tnode.value[3]+"\">"+tag+"/></a>"; // not elegant but because of structure textile!
+                        if (tnode.value[3]=="" || tnode.value[3]==undefined){
+                        	tag +=" />";
                         }
                         else {
-                            tag +=" />";
+                        	tag = "<a href=\""+tnode.value[3]+"\">"+tag+"/></a>"; // not elegant but because of structure textile!
                         }
                     } // image
                     else { // not an image
