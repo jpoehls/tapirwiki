@@ -44,19 +44,19 @@ function makehtmlrenderer(){
   
     function replacechar(match){
         if (match=="<"){
-           return "&lt;";
+            return "&lt;";
         }
         else if (match==">"){
-           return "&gt;";
+            return "&gt;";
         }
-        else if (match=="\""){
-           return "&quot;";
+        else if (match=='"'){
+            return "&quot;";
         }
         else if (match=="'"){
-           return "&#8217;";
+            return "&#8217;";
         }
         else if (match=="&"){
-          return "&amp;";
+            return "&amp;";
         }
     }
 
@@ -66,7 +66,7 @@ function makehtmlrenderer(){
     }
     
     // punctuation
-    var ent={"'":"&#8217;"," - ":" &#8211; ","([^!])--([^>])":"$1&#8212;$2"," x ":" &#215; ","\\.\\.\\.":"&#8230;","\\(C\\)":"&#169;","\\(R\\)":"&#174;","\\(TM\\)":"&#8482;"};
+    var ent={"'":"&#8217;",'(\\s|^)"':"$1&#8220;",'"(\\s|$)':"&#8221;$1"," - ":" &#8211; ","([^!])--([^>])":"$1&#8212;$2"," x ":" &#215; ","\\.\\.\\.":"&#8230;","\\(C\\)":"&#169;","\\(R\\)":"&#174;","\\(TM\\)":"&#8482;"};
     function punctuate(sometext){
         for(var i in ent) { 
             if (ent.hasOwnProperty(i)){
@@ -111,7 +111,9 @@ function makehtmlrenderer(){
                   image       : "img",
                   acronym     : "acronym",
                   footnote    : "p",
-                  footref     : "sup"
+                  footref     : "sup",
+                  pre         : "pre",
+                  prec        : "pre"
               };
     var empty =  { image : true };
 
@@ -154,7 +156,7 @@ function makehtmlrenderer(){
             else if (tnode.type =="#text"){ 
                 var snippet="";
                 if ((tnode.parent.type !== "code") && (tnode.parent.type !== "blockcode") && (tnode.parent.type !== "pre") &&
-                    (tnode.parent.type !=="blockcodec")){
+                    (tnode.parent.type !== "prec") && (tnode.parent.type !=="blockcodec")){
                     snippet=punctuate(tnode.value);
                 }
                 else {
