@@ -19,14 +19,14 @@ function makeTextileParser(){
     // This is the "module" which, after initialization returns the parser function
     // do this in user code: textileParser=makeTextileParser(); then call with: textileParser(text);
 
-    // Define content arrays. Ensure that routine only looks for possible content to spurious matches
+    // Define content arrays. Ensure that routine only looks for possible content to avoid spurious matches
     var phrase =  ["bold", "italics", "emphasis", "strong", "citation", "superscript", "subscript", "span", 
                    "deleted", "inserted", "code", "notextilein", "image", "acronym", "footref",
                    "linetoken"]; 
     var inline = phrase.concat(["texlinkurl", "wikilink", "aliaslink"]); 
     var headings = ["heading1", "heading2", "heading3", "heading4", "heading5", "heading6"];
     var blocks = headings.concat(["para", "bulletlist", "numberlist", "blockcode", "blockcodec", "blockquote", "blockquotec",
-                                  "table", "blockhtml","notextilebl", "pre", "footnote", "linkalias", "blocktoken"]); 
+                                  "table", "blockhtml","notextilebl", "pre", "prec", "footnote", "linkalias", "blocktoken"]); 
     var flow = blocks.concat(inline);
      // define the object holding the names, regular expressions, and content it can have (to check for)
     // since JavaScript does not support lookbehind we sometimes need to match more than we need, therefore we adopt 
@@ -35,70 +35,64 @@ function makeTextileParser(){
     var markup =  {//block 
                    // textile does not allow bare text in body -> converted to paragraph so if root only look for blocks (not flow)
                    root : {re : "", ct : blocks},
-                   heading1 : {re : /(^h1(\S*)\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, //newlines are allowed but no doubles
-                   heading2  : {re : /(^h2(\S*)\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, 
-                   heading3  : {re : /(^h3(\S*)\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-                   heading4  : {re : /(^h4(\S*)\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-                   heading5  : {re : /(^h5(\S*)\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-                   heading6  : {re : /(^h6(\S*)\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-                   para      : {re : /(^p(\S*)\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, //explicit paragraph
+                   heading1 : {re : /(^h1([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, //newlines are allowed but no doubles
+                   heading2  : {re : /(^h2([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, 
+                   heading3  : {re : /(^h3([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+                   heading4  : {re : /(^h4([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+                   heading5  : {re : /(^h5([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+                   heading6  : {re : /(^h6([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+                   para      : {re : /(^p((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, //explicit paragraph
                    // for html just taking $0 as the match
                    blockhtml : {re : /(<(p|h[1-6]|div|ul|ol|dl|pre|blockquote|address|fieldset|table|ins|del|script|noscript)(?:"[^"]*"|'[^']*'|[^'">])*?>)((?:.|\n)*)<\/\2>(?:\n|\r\n)?/, ct: []}, 
 
                    // lists are ended with double newline. Any attributes directly in front of list marker ended with fullstop.
-                   bulletlist: {re : /(^((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?\.)?\*\s*((?:.|\n(?!\n))*)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : ["listitemb"]},
-                   numberlist: {re : /(^((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?\.)?#\s*((?:.|\n(?!\n))*)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : ["listitemn"]},
+                   bulletlist: {re : /(^([()]*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?\.)?\*\s*((?:.|\n(?!\n))*)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : ["listitemb"]},
+                   numberlist: {re : /(^([()]*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?\.)?#\s*((?:.|\n(?!\n))*)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : ["listitemn"]},
                    // newlines are allowed in lists. Attributes for listitems same as for lists.
                    // unordered and ordered lists can be freely mixed.                
-                   listitemb  : {re : /(^((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?\.)?((?:.|\n(?!\*)|\n\*\*)*)(?:\n|$))/, ct : flow}, // 
-                   listitemn  : {re : /(^((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?\.)?((?:.|\n(?!#)|\n##)*)(?:\n|$))/, ct : flow}, // 
-                   // blockcode  is ended by double newline if you want more newlines in between use a space on line, same goes for blockquote
-                   blockcode  : {re : /(^bc([()]*(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?)\.\s+((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : []},
-                   blockcodec : {re : /(^bc([()]*(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?)\.\.\s+((?:.|\n(?!^(?:h[1-6]|p|pre|bc|fn\d+|bq)\S*\.))*))/m, ct : []},         
-                   blockquote : {re : /(^bq([()]*(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?)\.\s+((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : flow}, 
-                   blockquotec: {re : /(^bq([()]*(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?)\.\.\s+((?:.|\n(?!^(?:h[1-6]|p|pre|bc|fn\d+|bq)\S*\.))*))/m, ct : flow},         
-                   table      : {re : /(^(?:table((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?\.)?(?:\n|\r\n))?(\|(?:.|\n)*?\|)\s*(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : ["tablerow"]},
-                   tablerow   : {re : /(^(?:((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?)\.)?(\|(?:.|\n)*?\|)\s*(?:\n|\r\n|$(?!\n)))/m, ct : ["headercell", "datacell"]},
+                   listitemb  : {re : /(^([()]*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?\.)?((?:.|\n(?!\*)|\n\*\*)*)(?:\n|$))/, ct : flow}, // 
+                   listitemn  : {re : /(^([()]*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?\.)?((?:.|\n(?!#)|\n##)*)(?:\n|$))/, ct : flow}, // 
+                   // blockcode  is ended by double newline if you want more newlines in between use a space on line, or use continued version
+                   blockcode  : {re : /(^bc([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.(?:\s|$)((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : []},
+                   blockcodec : {re : /(^bc([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.\.(?:\s|$)((?:.|\n(?!^(?:h[1-6]|p|pre|bc|fn\d+|bq)\S*\.))*))/m, ct : []},         
+                   blockquote : {re : /(^bq([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.(?:\s|$)((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : flow}, 
+                   blockquotec: {re : /(^bq([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.\.(?:\s|$)((?:.|\n(?!^(?:h[1-6]|p|pre|bc|fn\d+|bq)\S*\.))*))/m, ct : flow},         
+                   table      : {re : /(^(?:table([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?\.)?(?:\n|\r\n))?(\|(?:.|\n)*?\|)\s*(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : ["tablerow"]},
+                   tablerow   : {re : /(^(?:([()]*(?:[<>=]|<>)?[~^]?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.\s)?(\|(?:.|\n)*?\|)\s*(?:\n|\r\n|$(?!\n)))/m, ct : ["headercell", "datacell"]},
                    // attributes data cell in this order: colspan, rowspan, alignment, class/id, language, explicit style (all before the dot)
-                   headercell : {re : /(^\|_((?:\\\d+)?(?:\/\d+)?[()]*(?:[<>=^~]|<>)?(?:\/\d+)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?)?\.([^\|]*)(?:\|$)?)/, ct : flow},
-                   datacell   : {re : /(^\|(?:((?:\\\d+)?(?:\/\d+)?[()]*(?:[<>=^~]|<>)?(?:\/\d+)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*\})?)\.)?([^\|]*)(?:\|$)?)/, ct : flow},           
-                   bold        : {re : /(?:^|\W)(\*\*((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^\*\s](?:.|\n)+?[^\*\s])\*\*)(?=$|\W)/, ct : inline},   
-                   italics     : {re : /\b(__((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^_\s](?:.|\n)+?[^_\s])__)\b/, ct : inline},        
-                   emphasis    : {re : /\b(_((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^_\s](?:.|\n)+?[^_\s])_)\b/, ct : inline},         
-                   strong      : {re : /(?:^|\W)(\*((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^\*\s](?:.|\n)+?[^\*\s])\*)(?=$|\W)/, ct : inline},         // whereas the textile 2.0 standard does not seem to allow this for some
-                   citation    : {re : /(?:^|\W)(\?\?((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^\?\s](?:.|\n)+?[^\?\s])\?\?)(?=$|\W)/, ct : inline},       // reason.
-                   superscript : {re :  /(\^((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)((?:.|\n)+?)\^)(?=$|\W)/, ct : inline},    // we allow superscript to start at non word boundery for footnotes etc.
-                   subscript   : {re : /(~((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)((?:.|\n)+?)~)(?=$|\W)/, ct : inline},       // subscript likewise
-                   span        : {re : /(?:^|\W)(%((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^%\s](?:.|\n)+?[^%\s])%)(?=$|\W)/, ct : inline},
-                   deleted  : {re : /(?:^|\W)(-((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^\-\s](?:.|\n)+?[^\-\s])-)(?=$|\W)/, ct : inline},   // you can only insert or strike whole words
-                   code        : {re : /(?:^|\W)(@((?:\([\w-]*(?:#[-\w]+)?\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)((?:.|\n)+?)@)(?=$|\W)/, ct : []},
-                   inserted      : {re : /(?:^|\W)(\+((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^+\s](?:.|\n)+?[^+\s])\+)(?=$|\W)/, ct : inline },
+                   headercell : {re : /(^\|_((?:\\\d+)?(?:\/\d+)?[()]*(?:[<>=]|<>)?[~^]?(?:\/\d+)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.([^\|]*)(?:\|$)?)/, ct : flow},
+                   datacell   : {re : /(^\|(?:((?:\\\d+)?(?:\/\d+)?[()]*(?:[<>=]|<>)?[~^]?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.)?([^\|]*)(?:\|$)?)/, ct : flow},           
+                   bold        : {re : /(?:^|\W)(\*\*((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^\*\s](?:.|\n)+?[^\*\s])\*\*)(?=$|\W)/, ct : inline},   
+                   italics     : {re : /\b(__((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^_\s](?:.|\n)+?[^_\s])__)\b/, ct : inline},        
+                   emphasis    : {re : /\b(_((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^_\s](?:.|\n)+?[^_\s])_)\b/, ct : inline},         
+                   strong      : {re : /(?:^|\W)(\*((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^\*\s](?:.|\n)+?[^\*\s])\*)(?=$|\W)/, ct : inline},         // whereas the textile 2.0 standard does not seem to allow this for some
+                   citation    : {re : /(?:^|\W)(\?\?((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^\?\s](?:.|\n)+?[^\?\s])\?\?)(?=$|\W)/, ct : inline},       // reason.
+                   superscript : {re :  /(\^((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)((?:.|\n)+?)\^)(?=$|\W)/, ct : inline},    // we allow superscript to start at non word boundery for footnotes etc.
+                   subscript   : {re : /(~((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)((?:.|\n)+?)~)(?=$|\W)/, ct : inline},       // subscript likewise
+                   span        : {re : /(?:^|\W)(%((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^%\s](?:.|\n)+?[^%\s])%)(?=$|\W)/, ct : inline},
+                   deleted  : {re : /(?:^|\W)(-((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^\-\s](?:.|\n)+?[^\-\s])-)(?=$|\W)/, ct : inline},   // you can only insert or strike whole words
+                   code        : {re : /(?:^|\W)(@((?:\([\w-]*(?:#[-\w]+)?\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)((?:.|\n)+?)@)(?=$|\W)/, ct : []},
+                   inserted      : {re : /(?:^|\W)(\+((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^+\s](?:.|\n)+?[^+\s])\+)(?=$|\W)/, ct : inline },
                    acronym     : {re : /(?:^|\W)(()([A-Z]+)\((.*?)\))/, ct : []},
                    //footref no payload (no m[3]) 
                    footref     : {re : /(?:^|\W)\w+(\[()()(\d+)\])/, ct : []},
                    // footnote no class/id attributes as assigned automatically
-                   footnote    : {re : /(^fn(\d+)((?:<|>|=|<>)?[()]*(?:\[[a-z][a-z]\])?(?:\{\S*\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-		   texlinkurl  : {re : /("((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^"]+)":((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(?:\s|$)))*)?))/i, ct : phrase}, 
+                   footnote    : {re : /(^fn(\d+)([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+		   texlinkurl  : {re : /("((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^"]+)":((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~#*'%\$]|[.,?!](?!(?:\s|$)))*)?))/i, ct : phrase}, 
                    // image $3 is empty $4 is src file $5 is title $6 is link if any
-                   image       : {re : /(!((?:[<>()]*)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)?()(\S+?)(\(.*\))?!(?::((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(?:\s|$)))*)?))?)/i, ct : []},
-                   pre         : {re : /(^pre\.\s()((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : []}, // pre has a different meaning in textile. It is really the same as bc. but without the code formatting.
+                   image       : {re : /(!((?:[<>()]*)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?()(\S+?)(\(.*\))?!(?::((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(?:\s|$)))*)?))?)/i, ct : []},
+                   pre            : {re : /(^pre([()]*(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.(?:\s|$)((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : []},
+                   prec           : {re : /(^pre([()]*(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.\.(?:\s|$)((?:.|\n(?!^(?:h[1-6]|p|pre|bc|fn\d+|bq)\S*\.))*))/m, ct : []},
                    // link alias name m[2] value m[4]
-                   linkalias   : {re : /(^\[(\w+?)\]()((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~*'%\$]|[.,?!](?!(?:\s|$)))*)?))/im, ct : []},
-                   aliaslink   : {re : /("((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{\S*\})?)([^"]+)":(\w+))/i, ct : phrase}, 
+                   linkalias   : {re : /(^\[(\w+?)\]()((?:http|https|ftp|git):\/\/(?:[a-z0-9](?:[\-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,6}(?::\d{1,5})?(?:\/(?:[-a-z0-9_:\@&?=+/~#*'%\$]|[.,?!](?!(?:\s|$)))*)?)(?:\s|\n))/im, ct : []},
+                   aliaslink   : {re : /("((?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)([^"]+)":(\w+))/i, ct : phrase}, 
                    // below muchachos get special nodes the payload is put in value (m[2])
-                   notextilebl : {re : /(^notextile\.\s((?:.|\n)*?(?:\n\n|\r\n\r\n|$(?!\n))))/m, ct : []},
-                   notextilein : {re : /(?:^|\s)(==((?:.|\n)+?)==(?=(?:$|\s)))/m, ct : []},
+                   notextilebl : {re : /(^notextile\.(?:\s|$)((?:.|\n)*?(?:\n\n|\r\n\r\n|$(?!\n))))/m, ct : []},
+                   notextilein : {re : /(?:^|[\s("'])(==((?:.|\n)+?)==(?=(?:$|[\s"'.,?!)])))/m, ct : []},
                    wikilink    : {re : /(?:^|[^A-Za-z0-9!:\>\/])(([A-Z](?:[A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*))/m, ct : []},
                    blocktoken  : {re : /(^(\{\S.*?\})\s*$)/m, ct : []},
                    linetoken   : {re : /(?:^|[^!])((\{\S*?\}(?!\.)|\[\S*\](?!\{)))/m, ct : []}
                  };
-
-    // TODO:
-    // var rfn = /^fn(\d+)\.\s*(.*)/;
-    // var bq = /^bq\.(\.)?\s*/;
-    // var table=/^table\s*\{(.*)\}\..*/;
-    // var trstyle = /^\{(\S+)\}\.\s*\|/;
-
 
 
     
@@ -123,8 +117,8 @@ function makeTextileParser(){
     var rb = new RegExp("^\\*\\s*","mg");
     var rn = new RegExp("^#\\s*","mg");
     var parsetext = function(text, parent){
-        // call this function repeatedly until no matches no 
-        // for now logic about which tags not to test (no testing for link if parent is link for example)
+        // call this function recursively until no matches anymore
+        // matches are only tested for constructs in ct (content) attribute of parent (no testing for link if parent is link for example)
         // we have to find the first outer match. Strip in three parts. Text before the match. 
         // The match. And text-still to be parsed after the match.
         while (text.length>0){

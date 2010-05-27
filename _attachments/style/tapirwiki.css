@@ -66,6 +66,20 @@ div.jGrowl div.jGrowl-notification div.close{z-index:99; float:right; font-weigh
 div.jGrowl div.jGrowl-closer{padding-top:4px; padding-bottom:4px; cursor:pointer; font-size:.9em; font-weight:bold; text-align:center}
 @media print{div.jGrowl{display:none}}
 
+.ex{background-color: #FFEEEE;}
+.exnote{background-color: #EEEEFF;}
+#big-red {
+color:red;
+font-size:12pt;
+}
+#big-red2 {
+color:red;
+font-size:15pt;
+}
+.big {
+font-size:12pt;
+}
+li {padding-top:3px; padding-bottom:3px;}
 
 
 

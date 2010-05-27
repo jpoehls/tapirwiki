@@ -44,19 +44,19 @@ function makehtmlrenderer(){
   
     function replacechar(match){
         if (match=="<"){
-           return "&lt;";
+            return "&lt;";
         }
         else if (match==">"){
-           return "&gt;";
+            return "&gt;";
         }
-        else if (match=="\""){
-           return "&quot;";
+        else if (match=='"'){
+            return "&quot;";
         }
         else if (match=="'"){
-           return "&#8217;";
+            return "&#8217;";
         }
         else if (match=="&"){
-          return "&amp;";
+            return "&amp;";
         }
     }
 
@@ -66,7 +66,7 @@ function makehtmlrenderer(){
     }
     
     // punctuation
-    var ent={"'":"&#8217;"," - ":" &#8211; ","([^!])--([^>])":"$1&#8212;$2"," x ":" &#215; ","\\.\\.\\.":"&#8230;","\\(C\\)":"&#169;","\\(R\\)":"&#174;","\\(TM\\)":"&#8482;"};
+    var ent={"'":"&#8217;",'(\\s|^)"':"$1&#8220;",'"(\\s|$)':"&#8221;$1"," - ":" &#8211; ","([^!])--([^>])":"$1&#8212;$2"," x ":" &#215; ","\\.\\.\\.":"&#8230;","\\(C\\)":"&#169;","\\(R\\)":"&#174;","\\(TM\\)":"&#8482;"};
     function punctuate(sometext){
         for(var i in ent) { 
             if (ent.hasOwnProperty(i)){
@@ -111,7 +111,9 @@ function makehtmlrenderer(){
                   image       : "img",
                   acronym     : "acronym",
                   footnote    : "p",
-                  footref     : "sup"
+                  footref     : "sup",
+                  pre         : "pre",
+                  prec        : "pre"
               };
     var empty =  { image : true };
 
@@ -133,8 +135,11 @@ function makehtmlrenderer(){
                     if (tnode.type=="image"){  // is the only empty tag in textile
                     	if(tnode.value[1].substring(4,0) == "http"){
                     		tag +=" src=\""+tnode.value[1]+"\" ";//if src starts with http, include the src as provided so that it points to an external file 
-                        } else
-                    	{
+                        }
+                        else if(tnode.value[1].search("/")) { //path to another page than current page
+                                tag +=" src=\"../../"+tnode.value[1]+"\" ";                         
+                    	}
+                        else{ // image local to current page
                         	tag +=" src=\"../../"+wiki._id+"/"+tnode.value[1]+"\" ";//else, update the src so that it points to a wiki attachment of the current page
                     	}
                         tag +=tnode.value[2]!=""?" title=\""+tnode.value[2]+"\" alt=\""+tnode.value[2]+"\" ":"";
@@ -159,7 +164,7 @@ function makehtmlrenderer(){
             else if (tnode.type =="#text"){ 
                 var snippet="";
                 if ((tnode.parent.type !== "code") && (tnode.parent.type !== "blockcode") && (tnode.parent.type !== "pre") &&
-                    (tnode.parent.type !=="blockcodec")){
+                    (tnode.parent.type !== "prec") && (tnode.parent.type !=="blockcodec")){
                     snippet=punctuate(tnode.value);
                 }
                 else {
