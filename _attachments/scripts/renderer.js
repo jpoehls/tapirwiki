@@ -136,10 +136,10 @@ function makehtmlrenderer(){
                     	if(tnode.value[1].substring(4,0) == "http"){
                     		tag +=" src=\""+tnode.value[1]+"\" ";//if src starts with http, include the src as provided so that it points to an external file 
                         }
-                        else if(tnode.value[1].search("/")) { //path to another page than current page
+                        else if(tnode.value[1].search('/') != -1) { //path to another page than current page
                                 tag +=" src=\"../../"+tnode.value[1]+"\" ";                         
                     	}
-                        else{ // image local to current page
+                        else { // image local to current page
                         	tag +=" src=\"../../"+wiki._id+"/"+tnode.value[1]+"\" ";//else, update the src so that it points to a wiki attachment of the current page
                     	}
                         tag +=tnode.value[2]!=""?" title=\""+tnode.value[2]+"\" alt=\""+tnode.value[2]+"\" ":"";
