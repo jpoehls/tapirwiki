@@ -38,7 +38,7 @@ function addBreadcrum(pageName) {
 		});
 		//now, if we need to add a page we create the new crumb and remove the oldest
 		if(pageName != '') {
-			var bc = $("<li>" + pageName + "</li>");
+			var bc = $("<li style='display:inline;'>" + pageName + "</li>");
 			bc.click(function(){wiki.open(pageName)});
 			bc.hide();
 			
