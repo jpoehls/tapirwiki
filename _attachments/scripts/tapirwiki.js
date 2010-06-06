@@ -31,20 +31,20 @@ function addBreadcrum(pageName) {
 	
 	if($("#breadcrumbs :last").html() != pageName) {
 	
-		$("#breadcrumbs li").each(function(i){
+		$("#breadcrumbs span").each(function(i){
 			if($(this).html() == pageName){
 				$(this).fadeOut(300, function() { $(this).remove(); });
 			};
 		});
 		//now, if we need to add a page we create the new crumb and remove the oldest
 		if(pageName != '') {
-			var bc = $("<li style='display:inline;'>" + pageName + "</li>");
+			var bc = $("<span>" + pageName + "</span>");
 			bc.click(function(){wiki.open(pageName)});
 			bc.hide();
 			
 			var crumbs = $("#breadcrumbs"); 
 			//remove the first breadcrumb if there are more than 4
-			if(crumbs.children().size() > 4) {
+			if(crumbs.children().size() > 20) {
 				$("#breadcrumbs :first-child").fadeOut(300, function() { $(this).remove(); });
 			}
 			
@@ -498,6 +498,44 @@ var pages;
 }
 
 
+function couchftiSearch(qstring, summary, skip, perpage, maxresults){
+        var pages;
+        $.ajax({
+                type:   'get',
+                url:    '../../_fti?q='+qstring + "&amp;sl=" + (summary ? summary : "100") + "&amp;sk=" + (skip ? skip : "0") + "&amp;pp=" + (perpage ? perpage : "10"),
+                async: false,
+                success: function(data){
+                             var results = JSON.parse(data);
+                             pages=results;
+                         },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+			pageContent = "Error!";
+			 }
+        });
+        var html;
+        if (pages[0].totmatches > 0){ // we have search results
+            html = "<h3>Found "+pages[0].totmatches+" Results:</h3><ul class='page-list'>";
+
+	    for(var x = 1; x < pages.length; x++){
+        	var p = pages[x];
+		html += "<li><a href='#" + p._id + "' onClick='javascript: wiki.open(\"" + p._id + "\")'>" + p._id + "</a> rank: " + p.rank +"<br />Summary: "+p.summary+"<br />Last edited on: "+p.edited_on+" by "+p.edited_by + "</li>";
+	    }
+	    html += "</ul>";
+            // back and forward buttons
+            if (skip > 0){
+                html+="<a href=\"javascript: couchftiSearch('"+qstring+"',"+summary+","+ (skip-perpage)+","+ perpage+","+ maxresults+")\">Page Back </a>";
+            }
+            if ((skip+perpage < pages[0].totmatches) && (skip+perpage < maxresults)){
+                html+="<a href=\"javascript: couchftiSearch('"+qstring+"',"+summary+","+ (skip+perpage)+","+ perpage+","+ maxresults+")\">Page Forward </a>";
+            }
+        }
+        else { 
+                html+="<h3>No Results Found!</h3>";
+        }
+        $("#search-results").html(html);
+	return ;
+}
+
 function recentChanges() {
 	var pages;
 	
@@ -663,7 +701,3 @@ function pop(obj) {
 	
 }
 
-
-//JV trial
-// $(document).bind("openwiki", function (e, params) { wiki.open(params.id);}); this is nonsense we don't want a click event
-//$(document).pathbinder(wiki.open,":id");
