@@ -43,7 +43,7 @@ function makeTextileParser(){
                    heading6  : {re : /(^h6([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
                    para      : {re : /(^p((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, //explicit paragraph
                    // for html just taking $0 as the match
-                   blockhtml : {re : /(<(p|h[1-6]|div|ul|ol|dl|pre|blockquote|address|fieldset|table|ins|del|script|noscript)(?:"[^"]*"|'[^']*'|[^'">])*?>)((?:.|\n)*)<\/\2>(?:\n|\r\n)?/, ct: []}, 
+                   blockhtml : {re : /(<(p|h[1-6]|div|ul|ol|dl|pre|blockquote|form|address|fieldset|table|ins|del|script|noscript)(?:"[^"]*"|'[^']*'|[^'">])*?>)((?:.|\n)*)<\/\2>(?:\n|\r\n)?/, ct: []}, 
 
                    // lists are ended with double newline. Any attributes directly in front of list marker ended with fullstop.
                    bulletlist: {re : /(^([()]*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?\.)?\*\s*((?:.|\n(?!\n))*)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : ["listitemb"]},

@@ -17,10 +17,10 @@
 #main-menu,#header h1{float:left}
 #main-menu a{text-shadow: white 0px 2px 2px}
 #breadcrumb-bar {margin:0;padding:0}
-#breadcrumbs {float:left; padding:0 0 0 0.5em}
-#breadcrumbs li {display:inline;list-style:none;padding-left:0;padding-right:0.75em;cursor:pointer;font-weight:normal; color:#B3B3B3;font-size:xx-small}
-#breadcrumbs li:hover{color: #000;}
-#breadcrumbs li:before{content: "> "}
+/* #breadcrumbs ul {list-style:none; float:left; width:100%; padding:0 0 0 0.5em; } */
+#breadcrumbs span {font-weight:normal; color:#B3B3B3;font-size:xx-small}
+#breadcrumbs span:hover{color: #000;}
+#breadcrumbs span:before{content: " > "} 
 
 #templates a{margin-left:1em}
 html,body{background:#fff;color:#000;font-family:arial, sans-serif;font-size:small;margin:0;padding:0}
@@ -80,7 +80,7 @@ font-size:12pt;
 }
 li {padding-top:3px; padding-bottom:3px;}
 
-
+li {padding-top:4px; padding-bottom:4px;}
 
 .comment {background-color: #eee; margin-left: 1em; font-style:italic;-moz-border-radius:5px;-webkit-border-radius:5px;padding-left:1em;padding-right:1em;}
 .history-item{padding-bottom:1em;}
