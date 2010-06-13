@@ -109,7 +109,12 @@ wiki.display = function() {
 	$("#page-menu").html("");
 	$("<li class='pageSpecific'><a href='Javascript: wiki.edit()'>Edit</a></li>").appendTo("#page-menu");
 	$("<li class='pageSpecific'><a href='Javascript: wiki.history()'>History</a></li>").appendTo("#page-menu");
-	$("<li class='pageSpecific'><a href='Javascript: wiki.attachments()'>Attachments</a></li>").appendTo("#page-menu");
+        if (wiki._attachments){
+	   $("<li class='pageSpecific'><a href='Javascript: wiki.attachments()' style='color:#005dff;'>Attachments</a></li>").appendTo("#page-menu");
+        }
+        else {
+           $("<li class='pageSpecific'><a href='Javascript: wiki.attachments()'>Attachments</a></li>").appendTo("#page-menu");
+        }
 	$("<li class='pageSpecific'><a href='Javascript: wiki.remove()'>Delete</a></li>").appendTo("#page-menu");
 	window.location = "wiki.html#" + this._id;
     $.tapirWiki.pageChangeReset(this._id);
@@ -123,10 +128,24 @@ wiki.init = function() {
 	delete wiki._rev;
 	delete wiki._revisions;
 	delete wiki._attachments;
+        delete wiki.attachdescr;
 	wiki.body = "";
 	wiki.edited_on = "";
 	wiki.edited_by = "";
 };
+
+wiki.populate = function(data) {
+        var page = JSON.parse(data);
+        wiki._id = page._id;
+	wiki._rev = page._rev;
+	wiki.body = page.body;
+	wiki._revisions = page._revisions;
+	wiki.edited_on = page.edited_on;
+	wiki.edited_by = page.edited_by;
+	wiki._attachments = page._attachments;
+        wiki.attachdescr=page.attachdescr;
+};
+
 
 wiki.remove = function() {
 		if (confirm("Really delete this page?")) {
@@ -143,21 +162,30 @@ wiki.remove = function() {
 	}
 };
 
+wiki.refresh = function(id){ // call this if you want to repopulate the wiki in synchronous fashion
+        wiki.init();
+    	$.ajax({
+		type:	'get',
+		url:	'../../' + id + "?revs=true",
+                async: false,
+		success: function(data){wiki.populate(data);},
+
+		error: function (XMLHttpRequest, textStatus, errorThrown) {
+			wiki._id = id;
+			wiki.edit();
+			 }
+	});
+};
+
+
 
 wiki.open = function(id) {
 	wiki.init();
 	$.ajax({
 		type:	'get',
 		url:	'../../' + id + "?revs=true",
-		success:	function(data) {
-			var page = JSON.parse(data);
-			wiki._id = page._id;
-			wiki._rev = page._rev;
-			wiki.body = page.body;
-			wiki._revisions = page._revisions;
-			wiki.edited_on = page.edited_on;
-			wiki.edited_by = page.edited_by;
-			wiki._attachments = page._attachments;
+		success: function(data) {
+			wiki.populate(data);	
 			wiki.display();
 			addBreadcrum(wiki._id);
 			},
@@ -409,32 +437,161 @@ wiki.load = function() {
 	}, 200);
 }
 
+mimeicons = { 
+              "audio/ogg" : "icons/mime/audio-ogg.svg",
+              "application/pdf" : "icons/mime/mime-pdf.png",
+              "application/x-pdf" : "icons/mime/mime-pdf.png",
+              "application/vnd.oasis.opendocument.text" : "icons/mime/ODF_textdocument.png",
+              "application/vnd.oasis.opendocument.text-master" : "icons/mime/ODF_master.png",
+              "application/vnd.oasis.opendocument.text-web" : "icons/mimi/ODF_html_template.png",
+              "application/vnd.oasis.opendocument.graphics" : "icons/mime/ODF_drawing.png",
+              "application/vnd.oasis.opendocument.presentation" : "icons/mime/ODF_presentation.png",
+              "application/vnd.oasis.opendocument.spreadsheet" : "icons/mime/ODF_spreadsheet.png",
+              "application/vnd.oasis.opendocument.formula" : "icons/mime/ODF_formula.png",
+              "application/vnd.sun.xml.base" : "icons/mime/ODF_database.png",
+              "application/msword" : "icons/mime/mime-msword.png",
+              "application/msexcel" : "icons/mime/mime-msexcel.png",
+              "application/msaccess" : "icons/mime/mime-msaccess.png",
+              "application/mspowerpoint" : "icons/mime/mime-mspowerpoint.png",
+              "image/png" : "icons/mime/image-png.png",
+              "image/bmp" : "icons/mime/image-bmp.png",
+              "image/tiff" : "icons/mime/image-tiff.png",
+              "image/gif" : "icons/mime/image-gif.png",
+              "image/jpeg" : "icons/mime/image-jpeg.png",
+              "image/x-ico" : "icons/mime/image-x-ico.png",
+              "other" : "icons/mime/filetype-unknown.png"
+             };
+
+wiki.update = function() {
+
+	$.ajax({
+		type:	'put',
+		url:	'../../' + this._id,
+		data:	JSON.stringify(this),
+		async:	false,
+		success:	function(data) {
+			var response = JSON.parse(data);
+			wiki._rev = response.rev;
+			wiki.refresh(wiki._id);
+			$.jGrowl("Document updated...", {header: "Cool!"});
+		},
+		error: function (XMLHttpRequest, textStatus, errorThrown) {
+			error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
+	});
+	
+	
+}
 
 wiki.attachments = function() {
-		$('#page-body').html('<h2>Attachments</h2><ul id="attachment-list"></ul><div id="upload-form-holder"></div>').hide().fadeIn("slow");
+		$('#page-body').html('<h2>Attachments</h2><form name="attachment_list"><table><div id="attachment-list"></div></table></form><div id="buttongroup"><button id="editdesc">Edit Descriptions</button><button id="delselec">Delete selected</button></div><div id="upload-form-holder"></div>').hide();
+              
 	
-		$("<h3>New attachment</h3><form id='attachment-form' method='post' action='' content-type='multipart/form-data'><input id='_attachments' type='file' name='_attachments'/><input type='hidden' name='_rev' value='" + wiki._rev + "'/></form><button id='upload-button'>Upload File</button>").appendTo('#page-body');
-		$("#attachment-form").ajaxForm(function() { 
-            error("Thank you for your comment!"); 
-        });
-        
+		$('<h3>New attachment</h3><table style="border:0px;"><tr valign="top"><td style="border:0px;"><form id="attachment-form" name="attachment_form" method="post" action="" content-type="multipart/form-data"><input id="_attachments" type="file" name="_attachments"/><input type="hidden" name="_rev" value="' + wiki._rev + '"/></form></td><td style="border:0px;">File description:</td><td style="border:0px;"><form name="attachdescr_form"><textarea name="attachdescr" style="height:50px; width:450px;" ></textarea></form></td><td style="border:0px;"><button id="upload-button">Upload File</button></td></tr></table>').appendTo('#page-body');
+
+                refreshattachlist= function(){
+                    var icon = "";
+                    $("#attachment-list").empty();
+		    for(f in wiki._attachments) {
+                        if (mimeicons.hasOwnProperty(wiki._attachments[f].content_type)) {
+                            icon=mimeicons[wiki._attachments[f].content_type];
+                        }
+                        else {
+                            icon=mimeicons.other;
+                        }
+			$('<tr valign="top" id="'+f+'"><td><input type="checkbox" name="edit" value="'+f+'"></td><td><a href="../../' + wiki._id + '/' +  f + '"><img src="'+icon+'" border="0" /></a></td><td>'+ f + '</td><td><textarea class="filedesc" readonly="readonly" name="'+f+'" style="height:50px; width:600px">'+wiki.attachdescr[f]+'</textarea></td></tr>').appendTo("#attachment-list");
+		    }
+                }
+
+                refreshattachlist();
+                $('#page-body').fadeIn("slow");
+
+		$("#attachment_form").ajaxForm(function() { 
+                    error("Thank you for your comment!"); 
+                });
+                var comment="";
+                var attachmentdescription;
+                var attachment;
+
 		var options = { 
 		        target:    '',    
 		        url:       "../../" + wiki._id, 
 		        type:      "post",
-		        async:	false,
-				success:   function(data) {
-					wiki.open(wiki._id);
-					}
+		        async:     false,
+			success:   function(data) {
+                                        //data=data.match(/{.*}/)[0];
+                                        //var response = JSON.parse(data);
+                 			//wiki._rev = response.rev;
+                                        wiki.refresh(wiki._id); // you have to refresh to get the new attachment data (otherwise an update conflict results)
+                                                                // and also the rev (but this you could get with above commented out code as well) cannot use
+                                                                //  wiki.open as this is asynch and repaints so new routine was needed.
+                                        if (!wiki.attachdescr){
+                                             wiki.attachdescr={};
+                                        }
+                                        wiki.attachdescr[attachment]=attachmentdescription;
+                                        wiki.comment=comment;
+                                        wiki.update(); // and refresh
+                                        refreshattachlist();
+				   }
 		        }; 
-        
 		$("#upload-button").click(function() { 
-	        $("#attachment-form").ajaxSubmit(options);
-	    	});
+                    attachment=document.attachment_form._attachments.value;
+                    if (!attachment) return;
+                    attachment=attachment.replace(/[\-\s]/g, "_");
+                    attachmentdescription=document.attachdescr_form.attachdescr.value;
+                    comment="added attachment "+attachment;
+	            $("#attachment-form").ajaxSubmit(options);
+                });
 
-		for(f in wiki._attachments) {
-			$("<li><a href='../../" + wiki._id + "/" +  f + "'>" + f + "</a></li>").appendTo("#attachment-list");
-		}
+		$("#editdesc").click(function() { 
+                    $('.filedesc').removeAttr('readonly');
+                    $('#editdesc').hide();
+                    $('#delselec').hide();
+                    $('<button id="savedesc">Save Descriptions</button>').appendTo('#buttongroup');
+                    $("#savedesc").click(function() {
+                        var newattdescr={};
+                        $elements=$('.filedesc');
+                        for (var i=0; i<$elements.length; i++){
+                           newattdescr[$elements[i].name]=$elements[i].value;
+                        }
+                        wiki.attachdescr=newattdescr;
+                        wiki.update();
+                        refreshattachlist();
+                        $('#editdesc').show();
+                        $('#delselec').show();
+                        $('#savedesc').hide();
+                    });
+                });
+        
+		$("#delselec").click(function() { 
+                        var todelete=[];
+                        var message = "Are you sure you want to delete the files ";
+                        for (var i=0; i < document.attachment_list.edit.length; i++){
+                           if (document.attachment_list.edit[i].checked){
+                             todelete.push(document.attachment_list.edit[i].value);
+                           }
+                        }
+                        if (!todelete) return;
+                        message += todelete + "?";
+                        if (!confirm(message)) return;      
+                        for (var i=0; i<todelete.length; i++){
+                            $.ajax({
+		              type:	'delete',
+		              url:	'../../' + wiki._id+'/'+todelete[i]+'?rev='+wiki._rev,
+		              async:	false,
+		              success:	function(data) {
+			             var response = JSON.parse(data);
+			             wiki._rev = response.rev;
+			             $.jGrowl("File "+todelete[i]+" deleted...", {header: "Cool!"});
+                              },
+		              error: function (XMLHttpRequest, textStatus, errorThrown) {
+			          error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); 
+                              }
+	                    });
+                        }
+                        wiki.refresh(wiki._id);
+                        refreshattachlist();
+                });
+
 }
 
 //Finally, some miscellaneous useful functions
