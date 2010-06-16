@@ -498,7 +498,7 @@ wiki.attachments = function() {
                         else {
                             icon=mimeicons.other;
                         }
-			$('<tr valign="top" id="'+f+'"><td><input type="checkbox" name="edit" value="'+f+'"></td><td><a href="../../' + wiki._id + '/' +  f + '"><img src="'+icon+'" border="0" /></a></td><td>'+ f + '</td><td><textarea class="filedesc" readonly="readonly" name="'+f+'" style="height:50px; width:600px">'+wiki.attachdescr[f]+'</textarea></td></tr>').appendTo("#attachment-list");
+			$('<tr valign="top" id="'+f+'"><td><input type="checkbox" name="edit" value="'+f+'"></td><td><a href="../../' + wiki._id + '/' +  f + '"><img src="'+icon+'" border="0" /></a></td><td>'+ f + '</td><td><textarea class="filedesc" readonly="readonly" name="'+f+'" style="height:50px; width:600px">'+ ((wiki.attachdescr === undefined) ? "":  (wiki.attachdescr.hasOwnProperty(f) ? wiki.attachdescr[f] : "")) +'</textarea></td></tr>').appendTo("#attachment-list");
 		    }
                 }
 
@@ -669,8 +669,9 @@ function couchftiSearch(qstring, summary, skip, perpage, maxresults){
 			pageContent = "Error!";
 			 }
         });
-        var html;
-        if (pages[0].totmatches > 0){ // we have search results
+        var html="";
+//        if (pages[0].totmatches > 0){ // we have search results
+        if (pages[0].totmatches){ // we have search results
             html = "<h3>Found "+pages[0].totmatches+" Results:</h3><ul class='page-list'>";
 
 	    for(var x = 1; x < pages.length; x++){
