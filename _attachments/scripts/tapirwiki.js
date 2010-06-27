@@ -34,12 +34,12 @@ function addBreadcrum(pageName) {
 		$("#breadcrumbs span").each(function(i){
 			if($(this).html() == pageName){
 				$(this).fadeOut(300, function() { $(this).remove(); });
-			};
+			}
 		});
 		//now, if we need to add a page we create the new crumb and remove the oldest
 		if(pageName != '') {
 			var bc = $("<span>" + pageName + "</span>");
-			bc.click(function(){wiki.open(pageName)});
+			bc.click(function(){wiki.open(pageName);});
 			bc.hide();
 			
 			var crumbs = $("#breadcrumbs"); 
@@ -54,7 +54,7 @@ function addBreadcrum(pageName) {
 	}
 }
 
-wiki = new Object();
+wiki = {};
 
 //wiki page properties
 wiki._id = "";
@@ -68,7 +68,7 @@ wiki.comment = "";
 
 wiki.save = function() {
 
-	if(wiki._rev == null)
+	if(wiki._rev === null)
 	{
 		wiki._id = $("#title").val();
 	}
@@ -132,6 +132,7 @@ wiki.init = function() {
 	wiki.body = "";
 	wiki.edited_on = "";
 	wiki.edited_by = "";
+        wiki.comment="";
 };
 
 wiki.populate = function(data) {
@@ -142,8 +143,13 @@ wiki.populate = function(data) {
 	wiki._revisions = page._revisions;
 	wiki.edited_on = page.edited_on;
 	wiki.edited_by = page.edited_by;
-	wiki._attachments = page._attachments;
-        wiki.attachdescr=page.attachdescr;
+        wiki.comment = page.comment;
+        if (page.hasOwnProperty("_attachments")){
+            wiki._attachments = page._attachments;
+        };
+        if (page.hasOwnProperty("attachdescr")){
+            wiki.attachdescr=page.attachdescr;
+        }
 };
 
 
@@ -164,15 +170,14 @@ wiki.remove = function() {
 
 wiki.refresh = function(id){ // call this if you want to repopulate the wiki in synchronous fashion
         wiki.init();
-    	$.ajax({
+        $.ajax({
 		type:	'get',
 		url:	'../../' + id + "?revs=true",
                 async: false,
 		success: function(data){wiki.populate(data);},
 
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
-			wiki._id = id;
-			wiki.edit();
+				error("Ooooops!, REFRESH request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText);
 			 }
 	});
 };
@@ -279,7 +284,7 @@ wiki.edit = function() {
 		$("<li><a href='Javascript: wiki.save();'>Save</a></li>").appendTo("#page-menu").fadeIn("slow");
 		
 		
-		if(this._rev == undefined){
+		if(this._rev === undefined){
 			$("<li><a href='Javascript: wiki.open(\"" + settings.defaultPage + "\");'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
 		} else {
 			$("<li><a href='Javascript: wiki.display();'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
@@ -302,7 +307,7 @@ wiki.applyTemplate = function(id) {
 			error("Error!");
 			 }
 	});
-}
+};
 
 
 wiki.history = function() {
@@ -314,7 +319,7 @@ wiki.history = function() {
 	var rev = this._revisions.start;
 
 	//create an array to hold the merged list of revisions and conflicts
-	var oldPages = new Array();
+	var oldPages = [];
 	
 	//iterate through the revisions for the current page
 	for(var x in this._revisions.ids)
@@ -340,7 +345,7 @@ wiki.history = function() {
 		async:	false,
 		success: function(data) {
 			var conflicts = JSON.parse(data);
-			for(rev in conflicts._conflicts) {
+			for(var rev in conflicts._conflicts) {
 				$.ajax({
 					type:	'GET',
 					url:	'../../' + wiki._id + '?rev=' + conflicts._conflicts[rev],
@@ -373,7 +378,7 @@ wiki.history = function() {
 	});
 
 	//remember previous versions in an array so we can view a historic version
-	wiki.previousVersions = new Array();
+	wiki.previousVersions = [];
 	
 	for(var page in oldPages)
 	{	
@@ -384,10 +389,10 @@ wiki.history = function() {
 		}
 
 		wiki.previousVersions[oldPages[page]._rev] = oldPages[page];
-		if(oldPages[page].comment == undefined || oldPages[page].comment == ''){
+		if(oldPages[page].comment === undefined || oldPages[page].comment == ''){
 			var comment = '';
 		} else {
-			var comment = '<span class="comment">&quot;' + oldPages[page].comment + "&quot;</span>"
+			var comment = '<span class="comment">&quot;' + oldPages[page].comment + "&quot;</span>";
 		}
 		$('<li class="history-item"><a id="' + oldPages[page]._rev + '">' + event + ' on ' + oldPages[page].edited_on + ' by ' + oldPages[page].edited_by + '</a>' + comment +'</li>').appendTo('#history');
 		$('#' + oldPages[page]._rev).click(function(){
@@ -395,7 +400,7 @@ wiki.history = function() {
 			wiki.display();
 	});
 	}
-}
+};
 
 wiki.sync = function() {
 	localDBArr = location.toString().split("/",4);
@@ -427,7 +432,7 @@ wiki.sync = function() {
 			error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText);
 		}
 	});	
-}
+};
 
 wiki.load = function() {
 	//I'm pretty sure this is horrible...need to wait for the location to be updated before opening the page
@@ -435,12 +440,13 @@ wiki.load = function() {
 		var requestedPage = location.hash.substring(1);
 		wiki.open(requestedPage);
 	}, 200);
-}
+};
 
 mimeicons = { 
               "audio/ogg" : "icons/mime/audio-ogg.svg",
               "application/pdf" : "icons/mime/mime-pdf.png",
               "application/x-pdf" : "icons/mime/mime-pdf.png",
+              "application/rtf" : "icons/mime/application-rtf.png",
               "application/vnd.oasis.opendocument.text" : "icons/mime/ODF_textdocument.png",
               "application/vnd.oasis.opendocument.text-master" : "icons/mime/ODF_master.png",
               "application/vnd.oasis.opendocument.text-web" : "icons/mimi/ODF_html_template.png",
@@ -463,7 +469,7 @@ mimeicons = {
              };
 
 wiki.update = function() {
-
+        delete this._revisions; //this gives some problems so it seems
 	$.ajax({
 		type:	'put',
 		url:	'../../' + this._id,
@@ -476,22 +482,22 @@ wiki.update = function() {
 			$.jGrowl("Document updated...", {header: "Cool!"});
 		},
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
-			error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
+			error("Ooooops!, update request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
 	});
 	
 	
-}
+};
 
 wiki.attachments = function() {
-		$('#page-body').html('<h2>Attachments</h2><form name="attachment_list"><table><div id="attachment-list"></div></table></form><div id="buttongroup"><button id="editdesc">Edit Descriptions</button><button id="delselec">Delete selected</button></div><div id="upload-form-holder"></div>').hide();
+		$('#page-body').html('<h2>Attachments</h2><form name="attachment_list"><table id="attachment-list"></table></form><div id="buttongroup"><button id="editdesc">Edit Descriptions</button><button id="delselec">Delete selected</button></div><div id="upload-form-holder"></div>').hide();
               
 	
-		$('<h3>New attachment</h3><table style="border:0px;"><tr valign="top"><td style="border:0px;"><form id="attachment-form" name="attachment_form" method="post" action="" content-type="multipart/form-data"><input id="_attachments" type="file" name="_attachments"/><input type="hidden" name="_rev" value="' + wiki._rev + '"/></form></td><td style="border:0px;">File description:</td><td style="border:0px;"><form name="attachdescr_form"><textarea name="attachdescr" style="height:50px; width:450px;" ></textarea></form></td><td style="border:0px;"><button id="upload-button">Upload File</button></td></tr></table>').appendTo('#page-body');
+		$('<h3>New attachment</h3><table style="border:0px;"><tr valign="top"><td style="border:0px;"><form id="attachment-form" name="attachment_form" method="post" action="" content-type="multipart/form-data"><input id="_attachments" type="file" name="_attachments"/><input type="hidden" name="_rev" value="' + wiki._rev + '"/></form></td><td style="border:0px;">File description:</td><td style="border:0px;"><form id="att-descr-form" name="att_descr_form"><textarea name="attachdescr" style="height:50px; width:450px;" ></textarea></form></td><td style="border:0px;"><button id="upload-button">Upload File</button></td></tr></table>').appendTo('#page-body');
 
                 refreshattachlist= function(){
                     var icon = "";
                     $("#attachment-list").empty();
-		    for(f in wiki._attachments) {
+		    for(var f in wiki._attachments) {
                         if (mimeicons.hasOwnProperty(wiki._attachments[f].content_type)) {
                             icon=mimeicons[wiki._attachments[f].content_type];
                         }
@@ -500,27 +506,27 @@ wiki.attachments = function() {
                         }
 			$('<tr valign="top" id="'+f+'"><td><input type="checkbox" name="edit" value="'+f+'"></td><td><a href="../../' + wiki._id + '/' +  f + '"><img src="'+icon+'" border="0" /></a></td><td>'+ f + '</td><td><textarea class="filedesc" readonly="readonly" name="'+f+'" style="height:50px; width:600px">'+ ((wiki.attachdescr === undefined) ? "":  (wiki.attachdescr.hasOwnProperty(f) ? wiki.attachdescr[f] : "")) +'</textarea></td></tr>').appendTo("#attachment-list");
 		    }
-                }
+                };
 
                 refreshattachlist();
                 $('#page-body').fadeIn("slow");
 
-		$("#attachment_form").ajaxForm(function() { 
-                    error("Thank you for your comment!"); 
-                });
+		//$('#attachment-form').ajaxForm(function() { 
+                //    error("Thank you for your comment!"); 
+                //});
                 var comment="";
                 var attachmentdescription;
-                var attachment;
-
-		var options = { 
+                var attachment; 
+                $('#attachment-form').ajaxForm(
+ 		     { 
 		        target:    '',    
 		        url:       "../../" + wiki._id, 
-		        type:      "post",
+		        type:      'post',
 		        async:     false,
 			success:   function(data) {
                                         //data=data.match(/{.*}/)[0];
                                         //var response = JSON.parse(data);
-                 			//wiki._rev = response.rev;
+                                        //wiki._rev = response.rev;
                                         wiki.refresh(wiki._id); // you have to refresh to get the new attachment data (otherwise an update conflict results)
                                                                 // and also the rev (but this you could get with above commented out code as well) cannot use
                                                                 //  wiki.open as this is asynch and repaints so new routine was needed.
@@ -530,16 +536,28 @@ wiki.attachments = function() {
                                         wiki.attachdescr[attachment]=attachmentdescription;
                                         wiki.comment=comment;
                                         wiki.update(); // and refresh
+                                        // invoke indexing of attachment but check first if attachment indexing is enabled
+                                        if (settings.indexAttachmentsEnabled){
+                                            indexAttachment(wiki._id, attachment, "update", wiki._attachments[attachment].content_type);
+                                        };
                                         refreshattachlist();
-				   }
-		        }; 
+                                        $('#attachment-form').resetForm();
+                                        document.attachment_form._rev.value=wiki._rev;
+                                        $('#att-descr-form').resetForm();
+
+				   },
+		         error:     function (XMLHttpRequest, textStatus, errorThrown) {
+                                        error("Uploading failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText);
+                                    }                 
+                       }); 
 		$("#upload-button").click(function() { 
                     attachment=document.attachment_form._attachments.value;
                     if (!attachment) return;
                     attachment=attachment.replace(/[\-\s]/g, "_");
-                    attachmentdescription=document.attachdescr_form.attachdescr.value;
+                    attachmentdescription=document.att_descr_form.attachdescr.value;
                     comment="added attachment "+attachment;
-	            $("#attachment-form").ajaxSubmit(options);
+                    $('#attachment-form').submit();
+	            // $("#attachment-form").ajaxSubmit(options); CANNOT use ajaxSubmit and ajaxForm on same form!! gives lots of problems
                 });
 
 		$("#editdesc").click(function() { 
@@ -555,6 +573,7 @@ wiki.attachments = function() {
                         }
                         wiki.attachdescr=newattdescr;
                         wiki.update();
+                        document.attachment_form._rev.value=wiki._rev;
                         refreshattachlist();
                         $('#editdesc').show();
                         $('#delselec').show();
@@ -564,14 +583,19 @@ wiki.attachments = function() {
         
 		$("#delselec").click(function() { 
                         var todelete=[];
-                        var message = "Are you sure you want to delete the files ";
-                        for (var i=0; i < document.attachment_list.edit.length; i++){
-                           if (document.attachment_list.edit[i].checked){
-                             todelete.push(document.attachment_list.edit[i].value);
-                           }
+                        var message = "Are you sure you want to delete the file";
+                        if (document.attachment_list.edit.length){ // you have to do this check in case list has only one row
+                            for (var i=0; i < document.attachment_list.edit.length; i++){
+                                if (document.attachment_list.edit[i].checked){
+                                    todelete.push(document.attachment_list.edit[i].value);
+                                }
+                            }
+                        }
+                        else if (document.attachment_list.edit.checked){
+                             todelete.push(document.attachment_list.edit.value);
                         }
                         if (!todelete) return;
-                        message += todelete + "?";
+                        message += (todelete.length>1 ? "s "+ todelete : " " + todelete) + "?";
                         if (!confirm(message)) return;      
                         for (var i=0; i<todelete.length; i++){
                             $.ajax({
@@ -581,6 +605,12 @@ wiki.attachments = function() {
 		              success:	function(data) {
 			             var response = JSON.parse(data);
 			             wiki._rev = response.rev;
+                                     delete wiki._attachments[todelete[i]];
+                                     delete wiki.attachdescr[todelete[i]];
+                                     // update index but check first if attachment indexing is enabled
+                                     if (settings.indexAttachmentsEnabled){
+                                         indexAttachment(wiki._id, todelete[i], "delete");
+                                     };
 			             $.jGrowl("File "+todelete[i]+" deleted...", {header: "Cool!"});
                               },
 		              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -588,16 +618,40 @@ wiki.attachments = function() {
                               }
 	                    });
                         }
-                        wiki.refresh(wiki._id);
+                        wiki.update(); // do this to make sure attachment descriptions are in sync
+                        document.attachment_form._rev.value=wiki._rev;
                         refreshattachlist();
                 });
 
-}
+
+
+
+};
 
 //Finally, some miscellaneous useful functions
+
+function indexAttachment(id, filename, action, mime){
+    if (!mime){mime="";}
+    $.ajax({
+            target:    '',    
+            url:       '../../_aix?id='+id + "&amp;fn=" + filename + "&amp;me=" + mime + "&amp;act=" + action, 
+            type:      "get",
+            async:     false,
+            success:   function(data) {
+                         var results = JSON.parse(data);
+	               },
+            error:     function (XMLHttpRequest, textStatus, errorThrown) {
+                           pageContent = "Error!";
+                       }          
+           });
+}             
+
+
+
+
 function identify() {
 	var name=prompt("Please enter your name", $.cookie("userName"));
-	if (name!=null && name!="")
+	if (name!==null && name!="")
 		{
 			$.cookie("userName", name, { expires: 7 });
 			$("#userName").html(name);
@@ -655,11 +709,11 @@ var pages;
 }
 
 
-function couchftiSearch(qstring, summary, skip, perpage, maxresults){
+function couchftiSearch(qstring, summary, skip, perpage, maxresults, att){
         var pages;
         $.ajax({
                 type:   'get',
-                url:    '../../_fti?q='+qstring + "&amp;sl=" + (summary ? summary : "100") + "&amp;sk=" + (skip ? skip : "0") + "&amp;pp=" + (perpage ? perpage : "10"),
+                url:    '../../_fti?q='+qstring + "&amp;sl=" + (summary ? summary : "100") + "&amp;sk=" + (skip ? skip : "0") + "&amp;pp=" + (perpage ? perpage : "10") + "&amp;att=" + (att ? att : ""),
                 async: false,
                 success: function(data){
                              var results = JSON.parse(data);
@@ -675,16 +729,21 @@ function couchftiSearch(qstring, summary, skip, perpage, maxresults){
             html = "<h3>Found "+pages[0].totmatches+" Results:</h3><ul class='page-list'>";
 
 	    for(var x = 1; x < pages.length; x++){
-        	var p = pages[x];
-		html += "<li><a href='#" + p._id + "' onClick='javascript: wiki.open(\"" + p._id + "\")'>" + p._id + "</a> rank: " + p.rank +"<br />Summary: "+p.summary+"<br />Last edited on: "+p.edited_on+" by "+p.edited_by + "</li>";
-	    }
+                var p = pages[x];
+                if (!att){
+		    html += "<li><a href='#" + p._id + "' onClick='javascript: wiki.open(\"" + p._id + "\")'>" + p._id + "</a> rank: " + p.rank +"<br />Summary: "+p.summary+(p.hasOwnProperty('attachdescr')?"<br />Attachment descriptions: "+p.attachdescr:"")+"<br />Last edited on: "+p.edited_on+" by "+p.edited_by + "</li>";
+                }
+                else {
+                    html += "<li><a href='../../" + p._id + "'>" + p._id + "</a> rank: " + p.rank +"<br />Summary: "+p.summary+"</li>";
+                }
+            }
 	    html += "</ul>";
             // back and forward buttons
             if (skip > 0){
-                html+="<a href=\"javascript: couchftiSearch('"+qstring+"',"+summary+","+ (skip-perpage)+","+ perpage+","+ maxresults+")\">Page Back </a>";
+                html+="<a href=\"javascript: couchftiSearch('"+qstring+"',"+summary+","+ (skip-perpage)+","+ perpage+","+ maxresults+",'"+att+"')\">Page Back </a>";
             }
             if ((skip+perpage < pages[0].totmatches) && (skip+perpage < maxresults)){
-                html+="<a href=\"javascript: couchftiSearch('"+qstring+"',"+summary+","+ (skip+perpage)+","+ perpage+","+ maxresults+")\">Page Forward </a>";
+                html+="<a href=\"javascript: couchftiSearch('"+qstring+"',"+summary+","+ (skip+perpage)+","+ perpage+","+ maxresults+",'"+att+"')\">Page Forward </a>";
             }
         }
         else { 
@@ -693,6 +752,9 @@ function couchftiSearch(qstring, summary, skip, perpage, maxresults){
         $("#search-results").html(html);
 	return ;
 }
+
+
+
 
 function recentChanges() {
 	var pages;
@@ -785,16 +847,17 @@ $(document).ready(function()
 			    settings = result;
 			    //Set the wiki name
 			    $('#wikiName').html(settings.wikiName);
-
-    			    //And get the menu items
-			    for(item in settings.mainMenu)
+                            // put also in title please
+                            document.title=settings.wikiName;
+                            //And get the menu items
+			    for(var item in settings.mainMenu)
 			    {
 				    var m = settings.mainMenu[item];
 				    $("<li><a href='#" + m + "' onClick='Javascript: wiki.open(\"" + m + "\")'>" + m + "</a></li>").appendTo("#main-menu");
 			    }
 
 			    //and if replication is enabled show the sync menu item
-			    if(settings.replicationEnabled && location.toString().match(settings.replicationEndPoint) == null) {
+			    if(settings.replicationEnabled && location.toString().match(settings.replicationEndPoint) === null) {
 				    $("<li><a href='#' onClick='Javascript: wiki.sync()'>Synchronise</a></li>").appendTo("#main-menu");				
 			    }
 
@@ -812,7 +875,7 @@ $(document).ready(function()
 
 			    //And now, set the user name. This is stored in a cookie, it's in no way an authentication system, just lets people tag their updates...
 			    var userName = $.cookie("userName");
-			    if (userName == null){
+			    if (userName === null){
 					//If there is no cookie set, get the default from the settings
 					userName = settings.defaultUserName;
 					$.cookie("userName", userName);
@@ -832,14 +895,14 @@ $(document).ready(function()
 			                         async:	false,
 			                         success:	function(data) {
 				                                    var pages = JSON.parse(data);
-                                                                    for(p in pages) {
+                                                                    for(var p in pages) {
 						                       pop(pages[p]);
- 					                            }
-                                                                    $("#install-result").html("<h2>Installation complete</h2><p>Congratulations, TapirWiki has been set up correctly. Please refresh this page to access your new wiki or click <a href='./wiki.html'>here</a>.</p>");
+                                                                }
+                                                                $("#install-result").html("<h2>Installation complete</h2><p>Congratulations, TapirWiki has been set up correctly. Please refresh this page to access your new wiki or click <a href='./wiki.html'>here</a>.</p>");
 				                                },
 			                         error: function (XMLHttpRequest, textStatus, errorThrown) {
 				                            error("Ooooops!, request failed with status: " + XMLHttpRequest.status + ' ' + XMLHttpRequest.responseText); }
-                         		});		
+                                         });		
                                }
 		    }
 		});

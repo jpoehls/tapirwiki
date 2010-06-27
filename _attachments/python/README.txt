@@ -1,9 +1,9 @@
 TAPIRWIKI FULL TEXT INDEXING WITH XAPPY/XAPIAN 
 
-The program files in this directory should be installed in a directory CouchDB has access to.
-Make sure that this directory and the program files itself are owned by couchdb if you run couchdb as a daemon owned by that user.
+The program files in this directory should be copied into a directory the process running CouchDB has access to.
+Make sure that permissions on the program files allow the user in which name that process is running (usually a user called couchdb) to read the program files.
 
-To enable full text indexing with TapirWiki you must do the following:
+To enable full text indexing with TapirWiki please do the following:
 
 1. Install the Xapian libraries through your package manager if not on your system yet. (on ubuntu sudo apt-get install python-xapian)
 
@@ -11,31 +11,35 @@ To enable full text indexing with TapirWiki you must do the following:
 
 3. Install the dependencies:
 
-sudo easy_install couchDB 
+   sudo easy_install couchDB 
 
-sudo easy_install couchutil
+   sudo easy_install xappy
 
-sudo easy_install couchfti
+4. To be able to index/search PDF documents install pdftotext (most linux distributions have this included in the standard distribution)
 
-sudo easy_install xappy
+5. MSWord indexing/searching requires the program antiword installed.
 
-4. Unfortunately, as couchfti has a serious bug an the author has not yet updated (as of 2010-06-06) the module you need to replace the search.py program with the one in this directory. The file to be replaced can be found in the couchfti package directory of your python directory (perhaps /usr/local/lib/python2.6/dist-packages or /usr/lib/python2.5/site-packages) the couchfti directory could also be contained in the couchfti-0.1.2dev-py2.6.egg at that location.
+6. Indexing/searching Excel, PowerPoint or RTF files requires catlog installed.
 
-5. Update local.ini of CouchDB (probably in /etc/couchdb) by adding the below lines between the dashes (please change the directory names appropriately):
+7. Update local.ini of CouchDB (probably in /etc/couchdb) by adding the below lines between the dashes (please change the directory names appropriately):
 
 -------------------------------------
 
 [external]
 fti=/usr/bin/python /opt/tapirwiki/twquery.py -d /opt/tapirwiki/xappy -l /opt/tapirwiki/twquery.log
+aix=/usr/bin/python /opt/couchfti-indexing/twindxatt.py -d /opt/couchfti-indexing/xappy -l /opt/couchfti-indexing/xappy/indexatt.log
 
 [httpd_db_handlers]
 _fti = {couch_httpd_external, handle_external_req, <<"fti">>}
+_aix = {couch_httpd_external, handle_external_req, <<"aix">>}
+
 
 [update_notification]
 indexer = /usr/bin/python /opt/couchfti-indexing/twindex.py -d /opt/tapirwiki/xappy -l /opt/tapirwiki/xappy/twindex.log
 
-
 --------------------------------------
 
-6. Add the Search system page to your menu in TAPIRWIKISETTINGS 
+8. Add the Search system page to your menu in TAPIRWIKISETTINGS 
+
+9. Enable attachment indexing in TAPIRWIKISETTING
 
