@@ -19,7 +19,7 @@ To enable full text indexing with TapirWiki please do the following:
 
 5. MSWord indexing/searching requires the program antiword installed.
 
-6. Indexing/searching Excel, PowerPoint or RTF files requires catlog installed.
+6. Indexing/searching Excel, PowerPoint or RTF files requires catdoc installed.
 
 7. Update local.ini of CouchDB (probably in /etc/couchdb) by adding the below lines between the dashes (please change the directory names appropriately):
 
