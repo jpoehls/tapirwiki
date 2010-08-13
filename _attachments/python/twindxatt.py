@@ -156,8 +156,6 @@ def send(data):
 
 def main(dir, url, exclude):
     couch=couchdb.Server(url)
-    if not os.path.isdir(dir):
-        os.mkdir(dir)
     connections = {} #these hold the xappy index connections
     try:
         for quert in queries():
@@ -203,7 +201,7 @@ if __name__ == '__main__':
             help="URL of the couchdb server. [%default]"),
         make_option('-e', '--exclude', dest='exclude', metavar='DB_NAME', default=[],
             help="Exclude a database from indexing. Can be used multiple times."),
-        make_option('-l', '--log', dest='log', metavar="FILE", default='./xapian/index.log',
+        make_option('-l', '--log', dest='log', metavar="FILE", default='./xappy/twindxatt.log',
             help="Name of the log file to write to."),
     ]
     parser = OptionParser("usage: %prog [OPTIONS]", option_list=options)
@@ -212,6 +210,8 @@ if __name__ == '__main__':
         print "Unrecognized arguments: %s" % ' '.join(args)
         parser.print_help()
         exit(-1)
+    if not os.path.isdir(opts.dir):
+        os.mkdir(opts.dir)
     logging.basicConfig(filename=opts.log, level=logging.DEBUG, format="%(levelname)s %(message)s")
     try:
         main(os.path.abspath(opts.dir), opts.url, opts.exclude)

@@ -95,7 +95,7 @@ class ChangesProcessor(object):
     def run_once(self):
         while True:
             startkey = self._read_startkey()
-            log.debug('Reading updates from %r', startkey)
+            logging.debug('Reading updates from %r', startkey)
             args = {'limit': self.batch_size}
             if startkey is not None:
                 args['startkey'] = startkey
@@ -113,10 +113,10 @@ class ChangesProcessor(object):
                 self.handle_update(row.doc)
 
     def handle_delete(self, docid):
-        log.debug('Ignoring deletion: %s', docid)
+        logging.debug('Ignoring deletion: %s', docid)
 
     def handle_update(self, doc):
-        log.debug('Ignoring update: %s@%s', doc['_id'], doc['_rev'])
+        logging.debug('Ignoring update: %s@%s', doc['_id'], doc['_rev'])
 
     def _read_startkey(self):
         try:
@@ -153,7 +153,7 @@ class Indexer(ChangesProcessor):
             return super(Indexer, self).handle_changes(ids)
         finally:
             for path, index in self.__open_indexes.iteritems():
-                log.debug("flushing and closing index: %s", path)
+                logging.debug("flushing and closing index: %s", path)
                 index.flush()
                 index.close()
             self.__open_indexes.clear()
@@ -161,7 +161,7 @@ class Indexer(ChangesProcessor):
     def index(self, config):
         index = self.__open_indexes.get(config['path'])
         if index is None:
-            log.debug("opening index: %s", config['path'])
+            logging.debug("opening index: %s", config['path'])
             index = xappy.IndexerConnection(os.path.join(self.__path, config['path']))
             for args, kwargs in config['fields']:
                 index.add_field_action(*args, **kwargs)
@@ -169,13 +169,13 @@ class Indexer(ChangesProcessor):
         return index
 
     def handle_delete(self, docid):
-        log.debug('Handling delete for %s', docid)
+        logging.debug('Handling delete for %s', docid)
         for name, config in self.__indexes.iteritems():
             self.index(config).delete(docid)
-            log.info('Removed %s from %s index', docid, name)
+            logging.info('Removed %s from %s index', docid, name)
 
     def handle_update(self, doc):
-        log.debug('Handling update for %s@%s', doc['_id'], doc['_rev'])
+        logging.debug('Handling update for %s@%s', doc['_id'], doc['_rev'])
         for name, config in self.__indexes.iteritems():
             classification = config['classifier'](doc)
             if classification is None:
@@ -183,7 +183,7 @@ class Indexer(ChangesProcessor):
             factory = config['factories'].get(classification)
             if factory is None:
                 continue
-            log.info('Adding %s@%s to %s index as %r', doc['_id'], doc['_rev'], name, classification)
+            logging.info('Adding %s@%s to %s index as %r', doc['_id'], doc['_rev'], name, classification)
             # jv added to depbug
             print doc
             self.index(config).replace(factory(self.db, doc))
@@ -245,8 +245,6 @@ def updates():
 
 def main(dir, url, exclude):
     couch=couchdb.Server(url)
-    if not os.path.isdir(dir):
-        os.mkdir(dir)
     indices = {} #these indices hold the (xappy) indexer objects
     for update in updates():
         logging.debug("Processing change %r", update)
@@ -266,7 +264,7 @@ if __name__ == '__main__':
             help="URL of the couchdb server. [%default]"),
         make_option('-e', '--exclude', dest='exclude', metavar='DB_NAME', default=[],
             help="Exclude a database from indexing. Can be used multiple times."),
-        make_option('-l', '--log', dest='log', metavar="FILE", default='./xapian/index.log',
+        make_option('-l', '--log', dest='log', metavar="FILE", default='./xappy/twindex.log',
             help="Name of the log file to write to."),
     ]
     parser = OptionParser("usage: %prog [OPTIONS]", option_list=options)
@@ -275,7 +273,9 @@ if __name__ == '__main__':
         print "Unrecognized arguments: %s" % ' '.join(args)
         parser.print_help()
         exit(-1)
-    logging.basicConfig(filename=opts.log, level=logging.DEBUG, format="%(levelname)s %(message)s")
+    if not os.path.isdir(opts.dir):
+        os.mkdir(opts.dir)
+    logging.basicConfig(filename=opts.log, filemode='w', level=logging.DEBUG, format="%(levelname)s %(message)s")
     try:
         main(os.path.abspath(opts.dir), opts.url, opts.exclude)
     except:
