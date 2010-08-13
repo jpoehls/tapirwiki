@@ -138,7 +138,7 @@ class Searcher(object):
         try:
             conn = xappy.SearchConnection(os.path.join(self.__path, config['path']))
         except xapian.DatabaseOpeningError, e:
-            log.error(e)
+            logging.error(e)
             return None
         # Tokenize the query
         q = list(tokenize(query))
@@ -213,8 +213,6 @@ def send(data):
        sys.stdout.flush()
 
 def main(dir, url, exclude):
-    if not os.path.isdir(dir):
-        os.mkdir(dir)
     searchers = {}
     for quert in queries():
          qs = quert.get('query', {}).get('q', '')
@@ -262,12 +260,12 @@ def main(dir, url, exclude):
 if __name__ == '__main__':
     options = [
         make_option('-d', '--dir', dest='dir', metavar="DIRECTORY", default="./xappy",
-            help="Directory in which to store xapian databases. [%default]"),
+            help="Directory in which xapian databases are stored. [%default]"),
         make_option('-u', '--url', dest='url', metavar="URL", default="http://localhost:5984",
             help="URL of the couchdb server. [%default]"),
         make_option('-e', '--exclude', dest='exclude', metavar='DB_NAME', default=[],
             help="Exclude a database from indexing. Can be used multiple times."),
-        make_option('-l', '--log', dest='log', metavar="FILE", default='./xapian/query.log',
+        make_option('-l', '--log', dest='log', metavar="FILE", default='./xappy/twquery.log',
             help="Name of the log file to write to."),
     ]
     parser = OptionParser("usage: %prog [OPTIONS]", option_list=options)
