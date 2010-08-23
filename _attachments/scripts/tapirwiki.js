@@ -202,6 +202,20 @@ wiki.open = function(id) {
 	});
 };
 
+// functions needed in wiki.edit but perhaps also elsewhere
+function setConfirmUnload(on) {
+   
+     window.onbeforeunload = (on) ? unloadMessage : null;
+
+}
+
+function unloadMessage() {
+   
+     return 'You have entered new data on this TapirWiki page.';
+
+}
+
+
 wiki.edit = function() {
                 $.tapirWiki.pageChangeReset(this._id);
 		$("#inner-content").html("");
@@ -281,15 +295,16 @@ wiki.edit = function() {
 		$("<p><label>Comment:</label><input type='text' placeholder='Enter update comment here...' id='comment'/></p>").appendTo(form);
 		
 		$("#page-menu").html("");
-		$("<li><a href='Javascript: wiki.save();'>Save</a></li>").appendTo("#page-menu").fadeIn("slow");
+		$("<li><a href='Javascript: setConfirmUnload(false); wiki.save();'>Save</a></li>").appendTo("#page-menu").fadeIn("slow");
 		
 		
 		if(this._rev === undefined){
 			$("<li><a href='Javascript: wiki.open(\"" + settings.defaultPage + "\");'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
 		} else {
-			$("<li><a href='Javascript: wiki.display();'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
+			$("<li><a href='Javascript: setConfirmUnload(false); wiki.display();'>Cancel</a></li>").appendTo("#page-menu").fadeIn("slow");
 		}
 		$("#pageTitle").html("New page");
+                $(':input',form).bind("change", function() { setConfirmUnload(true); }); // Prevent accidental navigation away
 };
 
 wiki.applyTemplate = function(id) {
