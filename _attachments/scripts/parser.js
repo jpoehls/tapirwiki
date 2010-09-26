@@ -26,7 +26,7 @@ function makeTextileParser(){
     var inline = phrase.concat(["texlinkurl", "wikilink", "aliaslink"]); 
     var headings = ["heading1", "heading2", "heading3", "heading4", "heading5", "heading6"];
     var blocks = headings.concat(["para", "bulletlist", "numberlist", "blockcode", "blockcodec", "blockquote", "blockquotec",
-                                  "table", "blockhtml","notextilebl", "pre", "prec", "footnote", "linkalias", "blocktoken"]); 
+                                  "table", "blockhtml","notextilebl", "pre", "prec", "footnote", "linkalias", "blocktoken", "deflist"]); 
     var flow = blocks.concat(inline);
      // define the object holding the names, regular expressions, and content it can have (to check for)
     // since JavaScript does not support lookbehind we sometimes need to match more than we need, therefore we adopt 
@@ -56,7 +56,11 @@ function makeTextileParser(){
                    blockcode  : {re : /(^bc([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.(?:\s|$)((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : []},
                    blockcodec : {re : /(^bc([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.\.(?:\s|$)((?:.|\n(?!^(?:h[1-6]|p|pre|bc|fn\d+|bq)\S*\.))*))/m, ct : []},         
                    blockquote : {re : /(^bq([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.(?:\s|$)((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : flow}, 
-                   blockquotec: {re : /(^bq([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.\.(?:\s|$)((?:.|\n(?!^(?:h[1-6]|p|pre|bc|fn\d+|bq)\S*\.))*))/m, ct : flow},         
+                   blockquotec: {re : /(^bq([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.\.(?:\s|$)((?:.|\n(?!^(?:h[1-6]|p|pre|bc|fn\d+|bq)\S*\.))*))/m, ct : flow}, 
+                   deflist    : {re : /(^dl([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.(?:\s|$)((?:.|\n)*?)(?:\n\n\n|\r\n\r\n\r\n|$(?!\n)))/m, ct : ["defterm", "defdef"]},       
+                   defterm    : {re : /(^dt([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.(?:\s|$)((?:.|\n)*?)(?:\n|\r\n|$(?!\n)))/m, ct : []},       
+
+                   defdef     : {re : /(^dd([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.(?:\s|$)((?:.|\n)*?)(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : inline},       
                    table      : {re : /(^(?:table([()]*(?:[<>=]|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?\.)?(?:\n|\r\n))?(\|(?:.|\n)*?\|)\s*(?:\n\n|\r\n\r\n|$(?!\n)))/m, ct : ["tablerow"]},
                    tablerow   : {re : /(^(?:([()]*(?:[<>=]|<>)?[~^]?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)\.\s)?(\|(?:.|\n)*?\|)\s*(?:\n|\r\n|$(?!\n)))/m, ct : ["headercell", "datacell"]},
                    // attributes data cell in this order: colspan, rowspan, alignment, class/id, language, explicit style (all before the dot)
