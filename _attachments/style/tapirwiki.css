@@ -85,3 +85,6 @@ li {padding-top:4px; padding-bottom:4px;}
 .comment {background-color: #eee; margin-left: 1em; font-style:italic;-moz-border-radius:5px;-webkit-border-radius:5px;padding-left:1em;padding-right:1em;}
 .history-item{padding-bottom:1em;}
 ul#attachment-list{list-style-type: none}
+
+dt {padding-top:6px; font-weight:bold; font-variant: small-caps;}
+

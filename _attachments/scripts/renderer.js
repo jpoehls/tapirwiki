@@ -113,7 +113,10 @@ function makehtmlrenderer(){
                   footnote    : "p",
                   footref     : "sup",
                   pre         : "pre",
-                  prec        : "pre"
+                  prec        : "pre",
+                  deflist     : "dl",
+                  defterm     : "dt",
+                  defdef      : "dd",
               };
     var empty =  { image : true };
 
