@@ -2,7 +2,7 @@ function maketapirwikiparseandreplace(){
     // all the macros should either appear here or be imported here
     var pageContent = "";
 
-    function includePage(id) {
+    function includePage(str, id) {
 	$.ajax({
 		type:	'get',
 		url:	'../../' + id,
@@ -40,7 +40,7 @@ function maketapirwikiparseandreplace(){
 	for(var x = 0; x < pages.total_rows; x++)
 			{
 				var p = pages.rows[x];
-				html += "<li><a href='#" + p.id + "' onClick='Javascript: wiki.open(\"" + p.id + "\")'>" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
+				html += "<li><a href='#" + p.id + "' >" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
 			}
 	html += "</ul>";
 	return html;
@@ -83,7 +83,7 @@ function maketapirwikiparseandreplace(){
 		for(var x = 0; x < recentPages; x++)
 				{
 					var p = pages.rows[x];
-					html += "<li><a href='#" + p.id + "' onClick='Javascript: wiki.open(\"" + p.id + "\")'>" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
+					html += "<li><a href='#" + p.id + "' >" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
 					}
 		html += "</ul>";
 		return html;
@@ -91,7 +91,7 @@ function maketapirwikiparseandreplace(){
 
 
 
-    function topicList(title) {
+    function topicList(str, title) {
         var pages;
 
 	$.ajax({
@@ -114,16 +114,27 @@ function maketapirwikiparseandreplace(){
 				var p = pages.rows[x];
 				if (p.id.substring(title.length, 0) == title) {
 
-				html += "<li><a href='#" + p.id + "' onClick='Javascript: wiki.open(\"" + p.id + "\")'>" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
+				html += "<li><a href='#" + p.id + "' >" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
 			}
 			}
 	html += "</ul>";
 	return html;
     }
+
+    function maketoc(str,p1) {
+        // var html='<script>$(\'<div id="toc"></div>\').prependTo(\'#content\'); $(\'<p id="toctit">Table of Contents:</p>\').appendTo(\'#toc\'); $.toc(\''+param+'\').appendTo(\'#toc\'); </script>';
+        var html='<script>'
+        html+='$(\'<div id="toc"></div>\').prependTo(\'#page-body\'); '
+        html+='$.toc(\''+p1+'\').prependTo(\'#toc\'); '
+        html+='$(\'<p id="toctit">Table of Contents:</p>\').prependTo(\'#toc\'); '
+        html+='</script>'
+        return html;
+    }
+
     // regexes
     var tokens = {
         goToMacro         : {re : /\{goto:(\S.*?)\}/g,
-                             sub: '<a href="#$1" onClick="javascript: wiki.load()">$1</a>'},
+                             sub: '<a href="#$1">$1</a>'},
         indexMacro        : {re : /\{index\}/, 
                              sub: index},
         topicMacro        : {re : /\{topic:(\S.*?)\}/g, 
@@ -131,23 +142,23 @@ function maketapirwikiparseandreplace(){
         recentChangesMacro: {re : /\{recentChanges\}/, 
                              sub: recentChanges},
         includeMacro      : {re : /\{include:(.*?)\}/g,
-                             sub: includePage }
+                             sub: includePage },
+        toc               : {re: /\{toc:(\S.*?)\}/g,
+                             sub: maketoc}
     }; // end tapirwikitokens
 
 
     function parseandreplace(tnode){
         if (tnode.type =="#wikilink"){
-             tnode.value="<a href='#"+tnode.value+"' onClick='javascript: wiki.load()'>"+tnode.value+"</a>";
+             tnode.value='<a href="#'+tnode.value+'">'+tnode.value+'</a>';
         }
         else if (tnode.type == "#blocktoken"){              
-            tnode.value=tnode.value.replace(tokens.indexMacro.re, tokens.indexMacro.sub());
-            
-            var tid = tnode.value.replace(tokens.topicMacro.re, "$1");
-            tnode.value=tnode.value.replace(tokens.topicMacro.re, tokens.topicMacro.sub(tid));
-            tnode.value=tnode.value.replace(tokens.recentChangesMacro.re, tokens.recentChangesMacro.sub());
-            
-            var pid = tnode.value.replace(tokens.includeMacro.re, "$1");
-            tnode.value=tnode.value.replace(tokens.includeMacro.re, tokens.includeMacro.sub(pid));
+            tnode.value=tnode.value.replace(tokens.indexMacro.re, tokens.indexMacro.sub);
+            tnode.value=tnode.value.replace(tokens.topicMacro.re, tokens.topicMacro.sub);
+            tnode.value=tnode.value.replace(tokens.recentChangesMacro.re, tokens.recentChangesMacro.sub);
+            tnode.value=tnode.value.replace(tokens.toc.re, tokens.toc.sub);
+            tnode.value=tnode.value.replace(tokens.includeMacro.re,tokens.includeMacro.sub);
+            tnode.value=tnode.value.replace(tokens.toc.re, tokens.toc.sub)
             tnode.value=tnode.value.replace(tokens.goToMacro.re, tokens.goToMacro.sub); // can appear both as line and block token!
          }
         else if (tnode.type == "#linetoken"){
