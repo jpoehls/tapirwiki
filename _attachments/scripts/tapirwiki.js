@@ -101,7 +101,7 @@ wiki.save = function() {
 	
 };
 
-wiki.display = function() {
+wiki.display = function(bm) {
 	var n = $("<div id='page-body'>" + convert(this.body) + "</div>").hide();
 	$("#inner-content").html(n);
 	n.fadeIn("fast");
@@ -116,8 +116,8 @@ wiki.display = function() {
            $("<li class='pageSpecific'><a href='Javascript: wiki.attachments()'>Attachments</a></li>").appendTo("#page-menu");
         }
 	$("<li class='pageSpecific'><a href='Javascript: wiki.remove()'>Delete</a></li>").appendTo("#page-menu");
-	window.location = "wiki.html#" + this._id;
-    $.tapirWiki.pageChangeReset(this._id);
+	window.location = "wiki.html#" + this._id + (bm ? ">"+bm:"");
+    $.tapirWiki.pageChangeReset(this._id+ (bm ? ">"+bm:""));
     
     
     
@@ -184,14 +184,14 @@ wiki.refresh = function(id, exclattdesc){ // call this if you want to repopulate
 
 
 
-wiki.open = function(id) {
+wiki.open = function(id, bm) {
 	wiki.init();
 	$.ajax({
 		type:	'get',
 		url:	'../../' + id + "?revs=true",
 		success: function(data) {
-			wiki.populate(data);	
-			wiki.display();
+			wiki.populate(data);
+                        wiki.display(bm);
 			addBreadcrum(wiki._id);
 			},
 
@@ -448,13 +448,13 @@ wiki.sync = function() {
 	});	
 };
 
-wiki.load = function() {
+//wiki.load = function() {
 	//I'm pretty sure this is horrible...need to wait for the location to be updated before opening the page
-	setTimeout(function() {
-		var requestedPage = location.hash.substring(1);
-		wiki.open(requestedPage);
-	}, 200);
-};
+//	setTimeout(function() {
+//		var requestedPage = location.hash.substring(1);
+//		wiki.open(requestedPage);
+//	}, 200);
+//};
 
 mimeicons = { 
               "audio/ogg" : "icons/mime/audio-ogg.svg",
@@ -708,51 +708,6 @@ function error(msg) {
 
 var pageContent = "";
 
-function includePage(id) {
-	$.ajax({
-		type:	'get',
-		url:	'../../' + id,
-		async:   false,
-		success:	function(data) {
-			var page = JSON.parse(data);
-			pageContent = convert(page.body);
-			},
-
-		error: function (XMLHttpRequest, textStatus, errorThrown) {
-			pageContent = "INCLUDE ERROR: <a href='Javascript: wiki.open(\"" + id + "\")'>" + id + "</a> does not exist yet...";
-			 }
-	});
-	return pageContent;
-}
-
-function index() {
-var pages;
-
-	$.ajax({
-		type:	'get',
-		url:	'_view/titles',
-		async:   false,
-		success:	function(data) {
-			var results = JSON.parse(data);
-			pages = results;
-			},
-		error: function (XMLHttpRequest, textStatus, errorThrown) {
-			pageContent = "Error!";
-			 }
-	});
-
-	var html = "<ul class='page-list'>";
-
-	for(var x = 0; x < pages.total_rows; x++)
-			{
-				var p = pages.rows[x];
-				html += "<li><a href='#" + p.id + "' onClick='Javascript: wiki.open(\"" + p.id + "\")'>" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
-			}
-	html += "</ul>";
-	return html;
-}
-
-
 function couchftiSearch(qstring, summary, skip, perpage, maxresults, att){
         var pages;
         $.ajax({
@@ -775,7 +730,7 @@ function couchftiSearch(qstring, summary, skip, perpage, maxresults, att){
 	    for(var x = 1; x < pages.length; x++){
                 var p = pages[x];
                 if (!att){
-		    html += "<li><a href='#" + p._id + "' onClick='javascript: wiki.open(\"" + p._id + "\")'>" + p._id + "</a> rank: " + p.rank +"<br />Summary: "+p.summary+(p.hasOwnProperty('attachdescr')?"<br />Attachment descriptions: "+p.attachdescr:"")+"<br />Last edited on: "+p.edited_on+" by "+p.edited_by + "</li>";
+		    html += "<li><a href='#" + p._id + "' >" + p._id + "</a> rank: " + p.rank +"<br />Summary: "+p.summary+(p.hasOwnProperty('attachdescr')?"<br />Attachment descriptions: "+p.attachdescr:"")+"<br />Last edited on: "+p.edited_on+" by "+p.edited_by + "</li>";
                 }
                 else {
                     html += "<li><a href='../../" + p._id + "'>" + p._id + "</a> rank: " + p.rank +"<br />Summary: "+p.summary+"</li>";
@@ -796,85 +751,6 @@ function couchftiSearch(qstring, summary, skip, perpage, maxresults, att){
         $("#search-results").html(html);
 	return ;
 }
-
-
-
-
-function recentChanges() {
-	var pages;
-	
-		$.ajax({
-			type:	'get',
-			url:	'_view/titles',
-			async:   false,
-			success:	function(data) {
-				var results = JSON.parse(data);
-				pages = results;
-				},
-			error: function (XMLHttpRequest, textStatus, errorThrown) {
-				pageContent = "Error!";
-				 }
-		});
-
-		pages.rows.sort(function(a,b){	
-			var dateA = Date.parse(a.value.edited_on);
-			var dateB = Date.parse(b.value.edited_on);
-			if (dateA < dateB) {
-				return 1;
-			} else {
-				return -1;
-			}
-		});
-
-
-		var html = "<ul class='page-list'>";
-		var recentPages = 5;
-		if(pages.rows.lenght < recentPages)
-		{
-			recentPages = pages.rows.length;
-		}
-		for(var x = 0; x < recentPages; x++)
-				{
-					var p = pages.rows[x];
-					html += "<li><a href='#" + p.id + "' onClick='Javascript: wiki.open(\"" + p.id + "\")'>" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
-					}
-		html += "</ul>";
-		return html;
-	}
-
-
-
-function topicList(title) {
-var pages;
-
-	$.ajax({
-		type:	'get',
-		url:	'_view/titles',
-		async:   false,
-		success:	function(data) {
-			var results = JSON.parse(data);
-			pages = results;
-			},
-
-		error: function (XMLHttpRequest, textStatus, errorThrown) {
-			pageContent = "INCLUDE ERROR: <a href='Javascript: wiki.open(\"" + id + "\")'>" + id + "</a> does not exist yet...";
-			 }
-	});
-
-	var html = "<ul class='page-list'>";
-	for(var x = 0; x < pages.total_rows; x++)
-			{
-				var p = pages.rows[x];
-				if (p.id.substring(title.length, 0) == title) {
-
-				html += "<li><a href='#" + p.id + "' onClick='Javascript: wiki.open(\"" + p.id + "\")'>" + p.id + "</a> edited on " + p.value.edited_on + " by " + p.value.edited_by + "</li>";
-			}
-			}
-	html += "</ul>";
-	return html;
-}
-
-
 
 //And finally...when the document is ready...
 
@@ -897,7 +773,7 @@ $(document).ready(function()
 			    for(var item in settings.mainMenu)
 			    {
 				    var m = settings.mainMenu[item];
-				    $("<li><a href='#" + m + "' onClick='Javascript: wiki.open(\"" + m + "\")'>" + m + "</a></li>").appendTo("#main-menu");
+				    $("<li><a href='#" + m + "' >" + m + "</a></li>").appendTo("#main-menu");
 			    }
 
 			    //and if replication is enabled show the sync menu item

@@ -35,12 +35,12 @@ function makeTextileParser(){
     var markup =  {//block 
                    // textile does not allow bare text in body -> converted to paragraph so if root only look for blocks (not flow)
                    root : {re : "", ct : blocks},
-                   heading1 : {re : /(^h1([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, //newlines are allowed but no doubles
-                   heading2  : {re : /(^h2([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, 
-                   heading3  : {re : /(^h3([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-                   heading4  : {re : /(^h4([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-                   heading5  : {re : /(^h5([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
-                   heading6  : {re : /(^h6([()]*(?:<|>|=|<>)?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+                   heading1 : {re : /(^h1((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, //newlines are allowed but no doubles
+                   heading2  : {re : /(^h2((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, 
+                   heading3  : {re : /(^h3((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+                   heading4  : {re : /(^h4((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+                   heading5  : {re : /(^h5((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
+                   heading6  : {re : /(^h6((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline},
                    para      : {re : /(^p((?:(?:\(|\))(?!\w))*(?:<|>|=|<>)?(?:\(\S*\))?(?:\[[a-z][a-z]\])?(?:\{.*?\})?)?\.\s+((?:.|\n)*?)(?:\n\s*\n|\r\n\s*\r\n|$(?!\n)))/m, ct : inline}, //explicit paragraph
                    // for html just taking $0 as the match
                    blockhtml : {re : /(<(p|h[1-6]|div|ul|ol|dl|pre|blockquote|form|address|fieldset|table|ins|del|script|noscript)(?:"[^"]*"|'[^']*'|[^'">])*?>)((?:.|\n)*)<\/\2>(?:\n|\r\n)?/, ct: []}, 
@@ -94,7 +94,7 @@ function makeTextileParser(){
                    notextilebl : {re : /(^notextile\.(?:\s|$)((?:.|\n)*?(?:\n\n|\r\n\r\n|$(?!\n))))/m, ct : []},
                    notextilein : {re : /(?:^|[\s("'])(==((?:.|\n)+?)==(?=(?:$|[\s"'.,?!)])))/m, ct : []},
                    wikilink    : {re : /(?:^|[^A-Za-z0-9!:\>\/])(([A-Z](?:[A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*))/m, ct : []},
-                   blocktoken  : {re : /(^(\{\S.*?\})\s*$)/m, ct : []},
+                   blocktoken  : {re : /(^(\{\S.*?\})\s*$(?:\n|\r\n)?)/m, ct : []}, //block token must be on its own line!
                    linetoken   : {re : /(?:^|[^!])((\{\S*?\}(?!\.)|\[\S*\](?!\{)))/m, ct : []}
                  };
 

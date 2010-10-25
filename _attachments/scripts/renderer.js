@@ -130,11 +130,11 @@ function makehtmlrenderer(){
                     var tag ="<"+map[tnode.type];
                     tag +=tnode.type=="texlinkurl"?" href=\""+tnode.value.pop()+"\" ":"";
                     tag +=tnode.type=="aliaslink"?" href=\""+aliasdic[tnode.value.pop()]+"\" ":"";                  
-                    tag +=tnode.type=="wikilink"?" href=\"#"+tnode.value.pop()+"\" onClick=\"javascript: wiki.load()\" ":"";
+                    tag +=tnode.type=="wikilink"?" href=\"#"+tnode.value.pop()+"\" onClick=\"javascript: wiki.open()\" ":"";
                     tag +=tnode.type=="acronym"?" title=\""+tnode.value.pop()+"\"":"";
                     tag +=makeattributestring(tnode.value[0], map[tnode.type]);
-                    tag +=tnode.type=="footnote"?" id=\"fn"+tnode.value[1]+"\" class=\"footnote\"><sup>"+tnode.value[1]+"</sup":"";
-                    tag +=tnode.type=="footref"?" class=\"footnote\"><a href=#fn"+tnode.value[1]+">"+tnode.value[1]+"</a":"";                
+                    tag +=tnode.type=="footnote"?" id=\""+wiki._id+">fn"+tnode.value[1]+"\" class=\"footnote\"><sup>"+tnode.value[1]+"</sup":"";
+                    tag +=tnode.type=="footref"?" class=\"footnote\"><a href=\"#"+wiki._id+">fn"+tnode.value[1]+"\">"+tnode.value[1]+"</a":"";                
                     if (tnode.type=="image"){  // is the only empty tag in textile
                     	if(tnode.value[1].substring(4,0) == "http"){
                     		tag +=" src=\""+tnode.value[1]+"\" ";//if src starts with http, include the src as provided so that it points to an external file 

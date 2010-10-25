@@ -87,4 +87,7 @@ li {padding-top:4px; padding-bottom:4px;}
 ul#attachment-list{list-style-type: none}
 
 dt {padding-top:6px; font-weight:bold; font-variant: small-caps;}
+#toc { float:right; border:solid 2px #B3B3B3; background-color:#F1F1F1; padding: 5px; margin-left: 5px; margin-bottom: 5px }
+#toc a{color:#000;text-decoration:none; opacity: 0.7}
+#toc a:hover{opacity: 1.0}
 
